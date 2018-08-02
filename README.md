@@ -1,5 +1,5 @@
-# BADfit
-Development version of BADfit force field derivation software
+# QuBeKit
+Development version of QuBeKit force field derivation software
 
 Requirements:
 
