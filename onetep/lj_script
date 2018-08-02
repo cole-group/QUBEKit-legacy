@@ -1,0 +1,195 @@
+#!/bin/bash
+
+##############
+
+netcharge=0
+
+##############
+
+numatm=`cat ddec.xyz | wc -l`
+numatm=$(($numatm-2))
+
+# Ha.Bohr^6 to kcal/mol.Ang^6 conversion factor
+autokcalang=13.7792544
+
+# Prepare z-matrix
+grep -B 999999 "Final Non" zmat > header
+echo "" >> header
+grep -A $(($numatm+1)) "Final Non" zmat | tail -n $numatm > footer
+
+symit=1
+X=1
+while [[ $X -lt $(($numatm+1)) ]]; do
+symmetry[$X]=0
+X=$(($X+1)); done
+
+# Check for polar H atoms and the heavy atom that they're bonded to
+# Check for symmetric atoms
+X=1
+while [[ $X -lt $(($numatm+1)) ]];
+do
+
+flaglj[$X]=0
+atmcmx2[$X]=0
+add[$X]=0
+
+qcm=$(echo `head -n $X footer | tail -n 1` | awk '{ printf "%i", $4*100000 }')
+sigcm=$(echo `head -n $X footer | tail -n 1` | awk '{ printf "%i", $5*1000 }')
+epscm=$(echo `head -n $X footer | tail -n 1` | awk '{ printf "%i", $6*1000 }')
+
+if [ $sigcm -eq 0 ]; then
+if [ $epscm -eq 0 ]; then
+flaglj[$X]=1
+atmcmh=$(echo `head -n $X footer | tail -n 1` | awk '{ printf "%i", $1 }')
+atmcmx=$(echo `grep " $atmcmh " header` | awk '{ printf "%i", $5 }')
+atmcmx2[$X]=$(echo `head -n $(($atmcmx+1)) header | tail -n 1` | awk '{ printf "%i", $3 }')
+fi
+fi
+
+Y=1
+while [[ $Y -lt $(($numatm+1)) ]];
+do
+qcm2=$(echo `head -n $Y footer | tail -n 1` | awk '{ printf "%i", $4*100000 }')
+sigcm2=$(echo `head -n $Y footer | tail -n 1` | awk '{ printf "%i", $5*1000 }')
+
+if [ "$Y" -ne "$X" ]; then
+if [ "$sigcm2" == "$sigcm" ]; then
+if [ "$qcm2" ==  "$qcm" ]; then
+if [ ${symmetry[$Y]} -eq 0 ]; then
+symmetry[$X]=$symit
+symmetry[$Y]=$symit
+fi
+fi
+fi
+fi
+Y=$(($Y+1))
+done
+symit=$(($symit+1))
+X=$(($X+1))
+done
+#################
+
+elem[1]="H"
+elem[6]="C"
+elem[7]="N"
+elem[8]="O"
+elem[9]="F"
+elem[16]="S"
+elem[17]="Cl"
+elem[35]="Br"
+
+vfree[1]=7.6
+vfree[6]=34.4
+vfree[7]=25.9
+vfree[8]=22.1
+vfree[9]=18.2
+vfree[16]=75.2
+vfree[17]=65.1
+vfree[35]=95.7
+
+bfree[1]=6.5
+bfree[6]=46.6
+bfree[7]=24.2
+bfree[8]=15.6
+bfree[9]=9.5
+bfree[16]=134.0
+bfree[17]=94.6
+bfree[35]=162.0
+
+rfree[1]=1.64
+rfree[6]=2.08
+rfree[7]=1.72
+rfree[8]=1.60
+rfree[9]=1.58
+rfree[16]=2.00
+rfree[17]=1.88
+rfree[35]=1.96
+
+qtot=0.0
+
+X=1
+while [[ $X -lt $(($numatm+1)) ]];
+do
+
+atm=`grep -A $(($numatm+3)) "Charges (X=" ddec.onetep | tail -n $numatm | cut -b 1-4 | head -n $X | tail -n 1 | tr -d ' '`
+charge=`grep -A $(($numatm+3)) "Charges (X=" ddec.onetep | tail -n $numatm | cut -b 32- | head -n $X | tail -n 1`
+dipole=`grep -A $(($numatm+3)) "DDEC Multipoles (X=" ddec.onetep | tail -n $numatm | cut -b 11-40 | head -n $X | tail -n 1`
+vol=`grep -A $(($numatm+3)) "DDEC Radial" ddec.onetep | tail -n $numatm | cut -b 15- | head -n $X | tail -n 1`
+
+q6dp=$(echo $charge | awk '{ printf "%6f", $1 }')
+qtot=$(echo $qtot $q6dp | awk '{ printf "%6f", $1+$2 }')
+
+Y=1
+while [ $Y -lt 54 ]; do
+if [ "$atm" == "${elem[$Y]}" ]; then
+atmnum=$Y
+fi
+Y=$(($Y+1))
+done
+
+fac=$(echo $vol ${vfree[$atmnum]} | awk '{ printf ($1+$2)/$4 }')
+sig=$(echo ${rfree[$atmnum]} $fac | awk '{ printf $1*($2**(1.0/3.0))*2.0**(5.0/6.0) }')
+eps=$(echo ${bfree[$atmnum]} $fac $autokcalang $sig | awk '{ printf $1*($2**2)*$3/(4.0*($4**6)) }')
+
+if [ ${flaglj[$X]} -eq 1 ]; then
+add[atmcmx2[$X]]=$(echo $eps $sig ${add[atmcmx2[$X]]} | awk '{ printf $3+sqrt($1*($2**6)) }')
+sig=0.0
+eps=0.0
+fi
+
+# ensure total charge = net charge
+if [ $X -eq $numatm ]; then
+q6dp=$(echo $charge $qtot $netcharge | awk '{ printf "%6f", $1-($2-$3) }')
+fi
+
+echo `head -n $X footer | tail -n 1`  $q6dp $sig $eps | awk '{ printf "%4s%3s%1s%-2s%11.6f%10.6f%10.6f\n",$1,$2," ",$3,$7,$8,$9 }' >> footer_ddec
+
+X=$(($X+1))
+done
+
+# Pass z-matrix again to sort out dispersion parameters of polar H atoms
+X=1
+while [[ $X -lt $(($numatm+1)) ]];
+do
+num=$(echo `head -n $X footer_ddec | tail -n 1` | awk '{ printf "%i", $1 }')
+qnew=$(echo `head -n $X footer_ddec | tail -n 1` | awk '{ printf $4 }')
+sig=$(echo `head -n $X footer_ddec | tail -n 1` | awk '{ printf $5 }')
+eps=$(echo `head -n $X footer_ddec | tail -n 1` | awk '{ printf $6 }')
+Y=1
+while [[ $Y -lt $(($numatm+1)) ]];
+do
+if [ "${atmcmx2[$Y]}" == "$num" ]; then
+eps=$(echo $eps $sig ${add[atmcmx2[$Y]]} | awk '{ printf (sqrt($1) + $3/($2**3))**2  }')
+echo "Removed dispersion parameter from atom" $(echo `head -n $Y footer_ddec | tail -n 1` | awk '{ printf "%i", $1 }')
+echo "Added dispersion parameter to atom" $num
+fi
+Y=$(($Y+1))
+done
+
+if [ ${symmetry[$X]} -ne 0 ]; then
+numsym[$X]=1
+echo "Symmetrised atoms:"
+echo $(echo `head -n $X footer_ddec | tail -n 1` | awk '{ printf "%i", $1 }')
+Y=1
+while [[ $Y -lt $(($numatm+1)) ]];
+do
+if [ "$Y" -ne "$X" ]; then
+if [ "${symmetry[$X]}" == "${symmetry[$Y]}" ]; then
+qnew=$(echo `head -n $Y footer_ddec | tail -n 1` $qnew | awk '{ printf $4+$7 }')
+sig=$(echo `head -n $Y footer_ddec | tail -n 1` $sig | awk '{ printf $5+$7 }')
+numsym[$X]=$((${numsym[$X]}+1))
+fi
+fi
+Y=$(($Y+1))
+done
+qnew=$(echo $qnew ${numsym[$X]} | awk '{ printf $1/$2 }')
+sig=$(echo $sig ${numsym[$X]} | awk '{ printf $1/$2 }')
+fi
+echo `head -n $X footer_ddec | tail -n 1`  $eps $qnew $sig | awk '{ printf "%4s%3s%1s%-2s%11.6f%10.6f%10.6f\n",$1,$2," ",$3,$8,$9,$7 }' >> footer_ddec2
+X=$(($X+1))
+done
+
+echo "" >> footer_ddec2
+cat footer_ddec2 >> header
+mv header zmat_ddec
+rm footer footer_ddec footer_ddec2

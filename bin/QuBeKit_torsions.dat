@@ -1,0 +1,14 @@
+#Optimised OPLS dihedral parameters that BADfit will search before fitting
+dihnum      V1       V2       V3        V4      Type          
+600         0.000    0.000    0.292     0.000   hc-ct-ct-hc   
+601         0.000    0.000    0.329     0.000   hc-ct-ct-ct
+602	    0.000    0.000    0.358     0.000   ho-oh-ct-hc
+603        -1.128    0.023    0.483    -0.104   ho-oh-ct-ct
+604	    0.000    0.000    0.468     0.000   hc-ct-ct-oh
+605	    0.000    2.060    0.000     0.000   ho-oh-ca-ca
+606         0.000    0.000    0.000     0.000   hc-ct-ca-ca
+607         0.000    0.000    0.302     0.000   hc-nt-ct-hc
+608         0.000    0.000    0.398     0.000   hs-sh-ct-hc
+609	    0.000    0.671    0.000     0.008   hs-sh-ca-ca
+610         0.000    0.000    0.530     0.000   hc-ct-ct-cl
+611         7.988    0.246   -0.015     0.517   cl-ct-ct-cl

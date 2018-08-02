@@ -1,0 +1,111 @@
+BADfit.py command line utility
+
+BADfit.py is a command line utility able to fit into any pc that has BOSS and help derive specific force field parameters for small molecules from QM data.
+
+You will need to make sure you have python3 or later to use BADfit so make sure you have installed Anaconda3 at least!
+On a hpc you may need to load anaconda to get a new version of python a command like:
+module load Anaconda3/5.0.1 
+should be ran at the start of each session.
+
+BADfit.py comes with a few options and can be displayed using BADfit.py -h in the terminal this will print the help section.
+The help section is repeated here:
+usage: BADfit.py [-h] [-f FUNCTION] [-t TYPE] [-X XML] [-z ZMAT] [-p PDB]
+                 [-c CHARGE] [-m MULTIPLICITY] [-s SUBMISSION] [-v VN]
+                 [-l PENALTY] [-d DIHEDRAL]
+
+Utility for the derivation of specific ligand parameters
+Requires BOSS make sure BOSSdir is set in bashrc
+Example input to write the bond and angles input file for g09 from a zmat file
+BADfit.py -f bonds -t write -z toluene.z -c 0 -m 1
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -f FUNCTION, --function FUNCTION
+                        Enter the function you wish to use bonds (covers
+                        bonds and angles terms), dihedrals and charges etc
+  -t TYPE, --type TYPE  Enter the function type you want this can be write,
+                        fit or analyse in the case of dihedrals (xyz charge
+                        input is written when bonds are fit) when writing and
+                        fitting dihedrals you will be prompted for the zmat
+                        index scanning angle
+  -X XML, --XML XML     Option for making an XML file if needed options yes
+                        default is no
+  -z ZMAT, --zmat ZMAT  The name of the zmat with .z
+  -p PDB, --PDB PDB     The name of the pdb file with .pdb
+  -c CHARGE, --charge CHARGE
+                        The charge of the molecule nedded for the g09 input
+                        files, defulat = 0
+  -m MULTIPLICITY, --multiplicity MULTIPLICITY
+                        The multiplicity of the molecule needed for the g09
+                        input files, default = 1
+  -s SUBMISSION, --submission SUBMISSION
+                        Write a submission script for the function called
+                        default no
+  -v VN, --Vn VN        The amount of Vn coefficients to fit in the dihedral
+                        fitting, default = 4
+  -l PENALTY, --penalty PENALTY
+                        The penalty used in torsion fitting between new
+                        parameters and opls reference, default = 0
+  -d DIHEDRAL, --dihedral DIHEDRAL
+                        Enter the dihedral number to be fit, the default will look
+                        at what SCAN folder it is running in
+
+BADfit.py is currently set up to write input files for g09 (can be changed later) QM calculations.
+
+Examples:
+Say you have a set of molecules you wish to refit for this example say toluene is the first on the list. I imagine you have a file called toluene and inside is the zmat(in expanded form) or PDB file or even both. If both are present make sure the PDB file was made using the xZPDB script in BOSS and that the atom order is the same as the zmat file.
+
+Now first we can write a bonds and angles g09 script using 
+
+BADfit.py -f bonds -t write -p toluene.PDB   
+(also has options for the charge -c and multiplicity -m, but they default to 0 and 1 respectively)
+
+Note: there is a submission option if the gaussian job is to be run on a hpc, this function should be edited in the BADfit.py file to match the hpc guidelines before being used.
+
+This will create a folder called BONDS and write the zmat.com file. You should then use your own submission file to run the job or run it locally. Once it is complete you can then derive the new bonds and angles using the command:
+
+BADfit.py -f bonds -t fit -z toluene.z  
+
+The new ddec.sb file and toluene_BA.z file will be moved to a folder called DDEC_PARAMS where you can now use the molecule and new bonds and angles in a calculation. The file ending of the zmat shows what has been derived/optimized.
+You will also notice a folder called CHARGES which contains the XYZ coordinates ready for a ONETEP calculation. 
+(This is the only input needed for the onetep calculation along with the users run_script)
+
+Once the ONETEP job is complete you can fit the new non-bonded parameters to the molecule using:
+BADfit.py -f charges -t fit -z toluene.z 
+The new-nonbonded parameters will be wrote to a new zmat file with a new sufix if ONETEP has found the addation of virtual sites to be nessacery to reduce the ESP below the chossen threshold, then two copies of the new zmat will be made. They will be placed in the DDEC_PARAMS file named toluene_DDEC.z (without sites) toluene_DDECV.z (with sites). 
+
+Now to fit the rotateable dihedral of toluene we need to first write the scan files for g09, this can be done by using 
+
+BADfit.py -f dihedrals -t write -z toluene.z 
+
+This will then search the zmat for all variable torsions and work out the minimum amount of scans that should be done to cover all of the types. You are then prompted for the dihedral angle you would like to scan from a list of possible torsions and if more than one is present have the option of all to write all the g09 files for each of the torsions.
+Some settings for writing the input files are only editable in the script itself such as the QM theory/ scaling constant or the number of processors per QM job. 
+
+You will now see a SCAN_no file is made where no is the dihedral number being scanned with a submission script in it providing you have used -s yes.
+
+After the QM scan is complete results can be collected using 
+
+BADfit.py -f dihedrals -t analyse -z toluene.z
+
+This will check the SCAN_no file or if more than one is present it will check them all and report any errors found making sure each calculation has converged. 
+
+BADfit.py -f dihedrals -t fit -z toluene.z -l 0.1
+
+This will also gather the results of a scan provided the results.dat file is not present and then begin fitting the torsion to the QM data.
+It will not prompt you for which angle it is to fit providing it can find the number from the SCAN_no file it has found the results in.
+ The -l option is the fitting penalty which has a default of 0, another option here would be to use -v =3 which changes the number of torsion parameters to be fit to 3, default =4. 
+The script will also look to see what new parameters are available to be used in the DDEC_PARAMS folder first and it will use any new parameters found so if ddec.sb (bonds and angles parameter file) toluene_BA.z (zmat re-wrote to call new bonds and angles)  is present then the highest optimisation sate will be used in the torsion fitting that is the new bonds and angles.
+If the non-bonded terms had been refit along with the bonds and angles then a file called toluene_DDEC_BA.z would be present and would be used.
+
+Once the fitting is complete the final files will be written back to the DDEC_PARAMS folder ready to use in BOSS or MCPRO or even convert to GMX files or openMM files using the following command
+
+BADfit.py -X yes -z toluene_DDEC_BAD.z 
+
+
+The final files for a full refit molecule are ddec.sb  and ddec.par along with toluene_DDEC_BAD.z. Where again the suffix indicates to what stage the molecule has been refit.
+
+
+
+
+
+
