@@ -48,7 +48,7 @@ numscan=25 # the number of optimisations around the dihedral angle
 T_wieght=999999 #the wieghting temperature that can be changed to better fit complicated surfaces
 improper_list=[0, 160, 161, 162, 165, 205, 221, 277] #list of improper torsions not to refit includes 165 a common ring torsion
 new_dihnum=501      #the parameter number for the new dihedral to be fit 
-Q_file='results.dat' #if the results are collected with BADfit this is always true
+Q_file='results.dat' #if the results are collected with QuBeKit this is always true
 tor_limit=20        #torsion Vn limit to speed up fitting 
 divisonarray= [2, 1, 0.5, 0.1, 0.01, 0.001] #parameter divison array 
 div_index =0
@@ -968,7 +968,7 @@ def BONDS_fit():
           print('No errors found now fitting new bonds and angles using MATLAB')
           if "lig.fchk" not in os.listdir("."):
               os.system('formchk lig.chk lig.fchk')
-          os.system('cp $BADfit/matlab/* .')
+          os.system('cp $QuBeKit/matlab/* .')
           os.system('cp $BOSSdir/oplsaa.sb .')
           os.system("sed -i 's/..\/bonds/..\/BONDS/g' test.m")
           os.system("sed -i 's/..\/bonds/..\/BONDS/g' test.m")
@@ -1556,7 +1556,7 @@ module load MATLAB/2017a
 
 module load Anaconda3/5.0.1 
 
-BADfit.py -f bonds -t fit -z %s.z 
+QuBeKit.py -f bonds -t fit -z %s.z 
     '''%(processors, molecule_name))
 ###################################################################################################
 def DIHEDRALS_sub(): 
@@ -2618,7 +2618,7 @@ elif args.function == 'dihedrals' and args.type == 'fit' and args.zmat:
                         print(f'{Fore.YELLOW}+{Style.RESET_ALL}')
                      else:
                         print(f'{Fore.YELLOW}+{Style.RESET_ALL}      ', end=" ")   
-          print('To fit torsions run BADfit.py -f dihedrals -t fit -z %s.z in each scan folder in your choice of order'%(molecule_name))       
+          print('To fit torsions run QuBeKit.py -f dihedrals -t fit -z %s.z in each scan folder in your choice of order'%(molecule_name))       
 ###################################################################################################
 elif args.function == 'charges' and args.type == 'write' and args.zmat:
      where=os.getcwd()
@@ -2648,7 +2648,7 @@ elif args.function == 'charges' and args.type == 'fit' and args.zmat:
        if "ddec_error_message" not in os.listdir("."):
          if "%s.z"%(molecule_name) in os.listdir("."):
             os.system('cp %s.z zmat'%(molecule_name))
-            os.system('cp $BADfit/onetep/lj_script .')
+            os.system('cp $QuBeKit/onetep/lj_script .')
             os.system('./lj_script')
             os.system('mv zmat_ddec %s_NB.z'%(molecule_name))
             if 'xyz_with_extra_point_charges.xyz' in os.listdir("."):
@@ -2690,7 +2690,7 @@ elif args.function == 'charges' and args.type == 'fit' and args.zmat:
                else:
                     os.system("cp ../../%s.z ."%(molecule_name))
                     os.system("cp %s.z zmat"%(molecule_name))
-               os.system('cp $BADfit/onetep/lj_script .')
+               os.system('cp $QuBeKit/onetep/lj_script .')
                os.system('./lj_script')
                os.system('mv zmat_ddec %s_NB.z'%(molecule_name))
                if 'xyz_with_extra_point_charges.xyz' in os.listdir("."):
@@ -2732,7 +2732,7 @@ elif args.function == 'charges' and args.type == 'fit' and args.zmat:
                else:
                     os.system("cp ../../%s.z ."%(molecule_name))
                     os.system("cp %s.z zmat"%(molecule_name))
-               os.system('cp $BADfit/onetep/lj_script .')
+               os.system('cp $QuBeKit/onetep/lj_script .')
                os.system('./lj_script')
                os.system('mv zmat_ddec %s_NB.z'%(molecule_name))
                if 'xyz_with_extra_point_charges.xyz' in os.listdir("."):
