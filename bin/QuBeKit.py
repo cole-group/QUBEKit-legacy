@@ -235,7 +235,7 @@ def DIHEDRALS_find(): #Find all variable dihedrals in the zmat and print to scre
     print('%s variable dihedrals found: %s'%(len(var_no), var_no)) #Print the dihedrals found 
     if len(var_types) == 0:
        print('No dihedrals found to scan')
-       scan=input('Would you still like to write scan files?:')
+       scan=input('Would you still like to write scan files?:\n> ')
        if scan == 'yes' or scan == 'y':
           for i in range(0,len(var_types)):
               for line in lines:
@@ -1583,7 +1583,7 @@ def Param_search(molecule_name, new_dihnum):
         os.system('cp $BOSSdir/oplsaa.sb .')
         BA=0
     if "%s_NB_BAD.z"%(molecule_name) in os.listdir("../../QuBe_PARAMS") or "%s_NBV_BAD.z"%(molecule_name) in os.listdir("../../QuBe_PARAMS"):
-        use=input('Other dihedral fitted parameters found (this is the case when fitting multiple torsions) would you like to use these?')
+        use=input('Other dihedral fitted parameters found (this is the case when fitting multiple torsions) would you like to use these?:\n> ')
         if use=='yes' or use == 'y':
            if "%s_NBV_BAD.z"%(molecule_name) in os.listdir("../../QuBe_PARAMS"):
                print("Non-bonded parameters with virtual sites found")
@@ -1620,7 +1620,7 @@ def Param_search(molecule_name, new_dihnum):
                  molecule_name=molecule_name+'_NB'
                  os.system("cp ../../QuBe_PARAMS/%s.z ."%(molecule_name))
     elif "%s_BAD.z"%(molecule_name) in os.listdir("../../QuBe_PARAMS"):
-          use=input('Other dihedral fitted parameters found (this is the case when fitting multiple torsions) would you like to use these?')
+          use=input('Other dihedral fitted parameters found (this is the case when fitting multiple torsions) would you like to use these?:\n> ')
           if use=='yes' or use == 'y':
              os.system('cp ../../QuBe_PARAMS/QuBe.par oplsaa.par')
              os.system('cp oplsaa.par oplsstore')
@@ -1650,7 +1650,7 @@ def Param_search(molecule_name, new_dihnum):
                      molecule_name=molecule_name+'_NB'
                      os.system("cp ../../QuBe_PARAMS/%s.z ."%(molecule_name))
     elif "%s_D.z"%(molecule_name) in os.listdir("../../QuBe_PARAMS"):
-          use=input('Other dihedral fitted parameters found (this is the case when fitting multiple torsions) would you like to use these?')
+          use=input('Other dihedral fitted parameters found (this is the case when fitting multiple torsions) would you like to use these?:\n> ')
           if use=='yes' or use == 'y':
              os.system('cp ../../QuBe_PARAMS/QuBe.par oplsaa.par')
              os.system('cp oplsaa.par oplsstore')
@@ -1849,7 +1849,10 @@ def xyztozmat():
                      out.write("%4i X0%1i %4i %4i %4i %11.6f%4i %11.6f%4i %11.6f UNK    1\n"%(atom+j+1, j+1, opls+j+1, opls+j+1, V_sites[j,0], V_sites[j,1], V_sites[j,2],  V_sites[j,3], V_sites[j,4], V_sites[j,5])) 
                  out.write(line)
             elif Q1z+1 < n < Q1z+atom:
-                 QM=int(line.split()[0][1:])
+                 try:
+                    QM=int(line.split()[0][1:])
+                 except:
+                     pass
                  #print(QM)
                  for i in range(len(V_sites)): #make sure charges are symetric 
                      if QM == int(V_sites[i,0])-3: #test if parent if so print new charge minus the sites
@@ -2380,7 +2383,7 @@ elif args.function == 'bonds' and args.type == 'fit' and args.PDB:
 ###################################################################################################        
 elif args.function == 'dihedrals' and args.type == 'write' and args.zmat:
    zmat_numbers=DIHEDRALS_find()
-   dihnum=input('Enter the dihedral number to be scaned around, or enter all to wirte files for the minimum required torsions:')
+   dihnum=input('Enter the dihedral number to be scaned around, or enter all to wirte files for the minimum required torsions:\n> ')
    if dihnum=='all':
       print('Writing scan files for all variable dihedrals')
       G1, V1, A1, D1, Q1 = dih_tag(molecule_name)
@@ -2490,7 +2493,7 @@ elif args.function == 'dihedrals' and args.type == 'fit' and args.zmat:
      grid=np.reshape(grid, (int(len(grid)),1))
      if "FITTING" in where:
               if "results.dat" in os.listdir("."):
-                  option=input('would you like to perform fitting in this folder with the parameters that are all ready here(yes), or search for new parameters and run fitting(no)?')
+                  option=input('would you like to perform fitting in this folder with the parameters that are all ready here(yes), or search for new parameters and run fitting(no)?:\n> ')
                   if option=='yes' or option=='y':
                      if "ligandqm" in os.listdir(".") or "ligandmm" in os.listdir("."):
                          os.system('rm ligand*')
