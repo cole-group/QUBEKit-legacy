@@ -22,6 +22,7 @@ from time import gmtime, strftime
 import fileinput
 import collections
 import re
+import configparser
 from decimal import Decimal
 import matplotlib.pyplot as plt
 remove_digits = str.maketrans('', '', digits)
@@ -54,6 +55,33 @@ divisonarray= [2, 1, 0.5, 0.1, 0.01, 0.001] #parameter divison array
 div_index =0
 XML_GMX_list=[0, 160, 161, 162, 221, 277] #this list should not need to be changed and seperates proper torsions and out of plane improper torsions for the xml and GMX files
 ###################################################################################################
+#config test
+config = configparser.RawConfigParser()
+#look for config file 
+loc=os.environ.get("QuBeKit")
+try: 
+        with open(os.path.join(loc,"bin/new_config.ini")) as source:
+            config.readfp( source )
+            theory = config['qm']['theory']
+except:
+        with open(os.path.join(loc,"bin/config.ini")) as source:
+            config.readfp( source )
+            theory = config['qm']['theory']
+#config.read('config.ini')
+theory = config['qm']['theory']
+vib_scaling= float(config['qm']['vib_scaling'])
+processors= int(config['qm']['processors'])
+memory= int(config['qm']['memory'])
+dihstart= int(config['fitting']['dihstart'])
+increment= int(config['fitting']['increment'])
+numscan= int(config['fitting']['numscan'])
+T_wieght= float(config['fitting']['T_wieght'])
+new_dihnum= int(config['fitting']['new_dihnum'])
+Q_file= config['fitting']['Q_file']
+tor_limit= int(config['fitting']['tor_limit'])
+div_index = int(config['fitting']['div_index'])
+#config load
+###################################################################################################
 parser = argparse.ArgumentParser(prog='QuBeKit.py', formatter_class=argparse.RawDescriptionHelpFormatter,
 description="""
 Utility for the derivation of specific ligand parameters
@@ -77,7 +105,21 @@ parser.add_argument('-d', '--dihedral', help='Enter the dihedral number to be fi
 parser.add_argument('-FR', '--frequency', help='Option to perform a QM MM frequency comparison, options yes default no')
 parser.add_argument('-SP', '--singlepoint', help='Option to perform a single point energy calculation in openMM to make sure the eneries match (OPLS combination rule is used)')
 parser.add_argument('-r', '--replace', help='Option to replace any valid dihedral terms in a molecule with QuBeKit previously optimised values. These dihedrals will be ignored in subsequent optimizations')
+parser.add_argument('-con', '--config', nargs='+', help='''Update global default options
+qm: theory, vib_scaling, processors, memory.
+fitting: dihstart, increment, numscan, T_wieght, new_dihnum, Q_file, tor_limit, div_index''')
 args = parser.parse_args()
+###################################################################################################
+#option to edit global config parameters 
+if args.config:
+   config_main=args.config
+   config_type=config_main[0].split(".")
+   config.set(config_type[0], config_type[1], config_main[1])
+   with open(os.path.join(loc,"bin/new_config.ini"), 'w+') as f:
+        config.write(f)
+   f.close()
+   sys.exit('Config file updated')
+###################################################################################################
 #Check that BOSSdir is set
 if 'BOSSdir' in os.environ:
      print('BOSSdir set!')
@@ -119,7 +161,7 @@ if args.function=='dihedrals':
       elif "SCAN" in where:
           where=where[-2:]
           where=re.sub("\D","",where)
-          dihnum=int(where)   
+          dihnum=int(where)  
 ###################################################################################################
 #function list
 ###################################################################################################
@@ -2297,6 +2339,10 @@ Old molecule data saved as %s.dat'''%(molecule_name, molecule_name))
           os.system('rm QuBe.par') 
           print('No torsions could be replaced')
     os.system('rm QuBeKit_torsions.dat')   
+###################################################################################################
+#def pal_dihedrals():  #function to use multiple cores to fit all dihedrals at once 
+                       #using combined total error. Fit from smallest to biggest rotations
+    
 ###################################################################################################
 #command list
 ###################################################################################################
