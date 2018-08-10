@@ -107,7 +107,8 @@ parser.add_argument('-SP', '--singlepoint', help='Option to perform a single poi
 parser.add_argument('-r', '--replace', help='Option to replace any valid dihedral terms in a molecule with QuBeKit previously optimised values. These dihedrals will be ignored in subsequent optimizations')
 parser.add_argument('-con', '--config', nargs='+', help='''Update global default options
 qm: theory, vib_scaling, processors, memory.
-fitting: dihstart, increment, numscan, T_wieght, new_dihnum, Q_file, tor_limit, div_index''')
+fitting: dihstart, increment, numscan, T_wieght, new_dihnum, Q_file, tor_limit, div_index
+example qm.theory wB97XD/6-311++G(d,p)''')
 args = parser.parse_args()
 ###################################################################################################
 #option to edit global config parameters 
