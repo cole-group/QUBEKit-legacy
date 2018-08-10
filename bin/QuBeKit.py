@@ -37,22 +37,10 @@ except:
 
 
 ###################################################################################################
-#Parameters to be editted
+#Parameter arrays
 ###################################################################################################
-theory='wB97XD/6-311++G(d,p)' #g09 theory to use in freq and dihedral scans recomended wB97XD/6-311++G(d,p)
-vib_scaling=0.957  #the associated scalling to the theory
-processors=2 #the amount of processors to be used in the g09 scripts this affects the bonds and dihedral scans
-memory=2 #the amount of memory in GB to be specificed in the g09 scripts
-dihstart=0 #starting angle of dihedral scan
-increment=15 #angle increse increment
-numscan=25 # the number of optimisations around the dihedral angle
-T_wieght=999999 #the wieghting temperature that can be changed to better fit complicated surfaces
-improper_list=[0, 160, 161, 162, 165, 205, 221, 277] #list of improper torsions not to refit includes 165 a common ring torsion
-new_dihnum=501      #the parameter number for the new dihedral to be fit 
-Q_file='results.dat' #if the results are collected with QuBeKit this is always true
-tor_limit=20        #torsion Vn limit to speed up fitting 
+improper_list=[0, 160, 161, 162, 165, 205, 221, 277] #list of improper torsions not to refit includes 165 a 
 divisonarray= [2, 1, 0.5, 0.1, 0.01, 0.001] #parameter divison array 
-div_index =0
 XML_GMX_list=[0, 160, 161, 162, 221, 277] #this list should not need to be changed and seperates proper torsions and out of plane improper torsions for the xml and GMX files
 ###################################################################################################
 #config test
@@ -68,7 +56,6 @@ except:
             config.readfp( source )
             theory = config['qm']['theory']
 #config.read('config.ini')
-theory = config['qm']['theory']
 vib_scaling= float(config['qm']['vib_scaling'])
 processors= int(config['qm']['processors'])
 memory= int(config['qm']['memory'])
