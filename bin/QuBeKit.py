@@ -62,7 +62,7 @@ memory= int(config['qm']['memory'])
 dihstart= int(config['fitting']['dihstart'])
 increment= int(config['fitting']['increment'])
 numscan= int(config['fitting']['numscan'])
-T_wieght= float(config['fitting']['T_wieght'])
+T_weight= float(config['fitting']['T_weight'])
 new_dihnum= int(config['fitting']['new_dihnum'])
 Q_file= config['fitting']['Q_file']
 tor_limit= int(config['fitting']['tor_limit'])
@@ -94,19 +94,40 @@ parser.add_argument('-SP', '--singlepoint', help='Option to perform a single poi
 parser.add_argument('-r', '--replace', help='Option to replace any valid dihedral terms in a molecule with QuBeKit previously optimised values. These dihedrals will be ignored in subsequent optimizations')
 parser.add_argument('-con', '--config', nargs='+', help='''Update global default options
 qm: theory, vib_scaling, processors, memory.
-fitting: dihstart, increment, numscan, T_wieght, new_dihnum, Q_file, tor_limit, div_index
-example qm.theory wB97XD/6-311++G(d,p)''')
+fitting: dihstart, increment, numscan, T_weight, new_dihnum, Q_file, tor_limit, div_index
+example: QuBeKit.py -con qm.theory wB97XD/6-311++G(d,p)''')
 args = parser.parse_args()
 ###################################################################################################
 #option to edit global config parameters 
 if args.config:
-   config_main=args.config
-   config_type=config_main[0].split(".")
-   config.set(config_type[0], config_type[1], config_main[1])
-   with open(os.path.join(loc,"bin/new_config.ini"), 'w+') as f:
-        config.write(f)
-   f.close()
-   sys.exit('Config file updated')
+   if args.config[0] == 'reset':
+      os.system('rm $QuBeKit/bin/new_config.ini ')
+      sys.exit('Config file reset to default')
+   elif args.config[0] == 'show':
+        sys.exit('''Config options:
+[qm]
+theory = %s
+vib_scaling= %s
+processors= %s
+memory= %s
+[fitting]
+dihstart= %s
+increment= %s
+numscan= %s
+T_weight= %s
+new_dihnum= %s
+Q_file= %s
+tor_limit= %s
+div_index = %s'''%( config['qm']['theory'], float(config['qm']['vib_scaling']), int(config['qm']['processors']), int(config['qm']['memory']), int(config['fitting']['dihstart']), int(config['fitting']['increment']), int(config['fitting']['numscan']),  float(config['fitting']['T_weight']), int(config['fitting']['new_dihnum']), config['fitting']['Q_file'], int(config['fitting']['tor_limit']), int(config['fitting']['div_index']) ))
+  
+   elif args.config:
+       config_main=args.config
+       config_type=config_main[0].split(".")
+       config.set(config_type[0], config_type[1], config_main[1])
+       with open(os.path.join(loc,"bin/new_config.ini"), 'w+') as f:
+             config.write(f)
+       f.close()
+       sys.exit('Config file updated')
 ###################################################################################################
 #Check that BOSSdir is set
 if 'BOSSdir' in os.environ:
@@ -420,7 +441,7 @@ def cmd_prep(dihnum): #Prep the BOSS command file to read our new custom param f
      else:
         out.write(line)
 ###################################################################################################
-def errorcal(Lambda,dih_ref,torsionparams, T_wieght):
+def errorcal(Lambda,dih_ref,torsionparams, T_weight):
     K_b=0.001987
     np.set_printoptions(suppress=True, precision=12)
     mm=open('ligandmm','r')
@@ -435,7 +456,7 @@ def errorcal(Lambda,dih_ref,torsionparams, T_wieght):
     table = table.T
     np.savetxt('compare', table,  fmt='% 8.6f       % 8.6f')
     ERRA=(mm_table-qm_table)**2
-    ERRA1=ERRA * np.exp(-qm_table/(K_b*T_wieght))
+    ERRA1=ERRA * np.exp(-qm_table/(K_b*T_weight))
     ERRS=math.sqrt(np.sum(ERRA)/(numscan))
     ERRS1=math.sqrt(np.sum(ERRA1)/(numscan))
     penalty= Lambda * np.sum(np.absolute(dih_ref-torsionparams))
@@ -454,7 +475,7 @@ def starting_error( Q_file, Lambda, N_torsions):
     clean()
     QM_prep(Q_file)
     run_boss()
-    sumerror, penalty =errorcal(0,dih_ref,torsionparams, T_wieght)
+    sumerror, penalty =errorcal(0,dih_ref,torsionparams, T_weight)
     out.write("Error= % 2.3f\n" %(sumerror))
     out.write("Bias= % 2.3f\n" %(penalty))
     print('''| Starting error = %2.3f                                                                         |''' %(sumerror))
@@ -527,14 +548,14 @@ def opt(Q_file, Lambda, molecule_name, div_index,divisonarray,tor_limit,N_torsio
        clean()  
        write_to_par(torsionparams, N_torsions, tor_string)  #write the new params to par
        run_boss()                               #do first run
-       sumerror, penalty =errorcal(Lambda,dih_ref,torsionparams, T_wieght) #find error using torsionparams input
+       sumerror, penalty =errorcal(Lambda,dih_ref,torsionparams, T_weight) #find error using torsionparams input
        penalty1=penalty   #set the penaltys so they can be printed
        sumerror1=sumerror #set first error as sumerror1
        torsionparams[i,j] = origvalue[i,j] + divisonarray[div_index] #increase the parameter
        clean()
        write_to_par(torsionparams, N_torsions, tor_string) #write new params to par
        run_boss()
-       sumerror, penalty =errorcal(Lambda,dih_ref,torsionparams, T_wieght) #find new error
+       sumerror, penalty =errorcal(Lambda,dih_ref,torsionparams, T_weight) #find new error
        if torsionparams[i,j] >= tor_limit:
           sumerror2= sumerror + 1
           penalty2 = penalty +1
@@ -545,7 +566,7 @@ def opt(Q_file, Lambda, molecule_name, div_index,divisonarray,tor_limit,N_torsio
        clean()
        write_to_par(torsionparams, N_torsions, tor_string) #write new params to par
        run_boss()
-       sumerror, penalty =errorcal(Lambda,dih_ref,torsionparams, T_wieght) 
+       sumerror, penalty =errorcal(Lambda,dih_ref,torsionparams, T_weight) 
        sumerror3=sumerror #set the thrid set of errors
        penalty3=penalty
        tot_error=[sumerror1, sumerror2, sumerror3]
@@ -579,7 +600,7 @@ def opt(Q_file, Lambda, molecule_name, div_index,divisonarray,tor_limit,N_torsio
     clean()
     write_to_par(torsionparams, N_torsions, tor_string)
     run_boss()
-    errorcal(Lambda,dih_ref,torsionparams, T_wieght)
+    errorcal(Lambda,dih_ref,torsionparams, T_weight)
     plot()
     py_plot()
     results.write("Done % s\n"%(strftime("%Y-%m-%d %H:%M:%S", gmtime())))
@@ -2327,10 +2348,7 @@ Old molecule data saved as %s.dat'''%(molecule_name, molecule_name))
           os.system('rm QuBe.par') 
           print('No torsions could be replaced')
     os.system('rm QuBeKit_torsions.dat')   
-###################################################################################################
-#def pal_dihedrals():  #function to use multiple cores to fit all dihedrals at once 
-                       #using combined total error. Fit from smallest to biggest rotations
-    
+   
 ###################################################################################################
 #command list
 ###################################################################################################
@@ -2514,7 +2532,7 @@ elif args.function == 'dihedrals' and args.type == 'check' and args.zmat:
          run_boss()
          torsionparams = np.zeros((4,4))
          dih_ref = np.zeros((4,4))
-         sumerror, penalty =errorcal(0,dih_ref,torsionparams, T_wieght)
+         sumerror, penalty =errorcal(0,dih_ref,torsionparams, T_weight)
          plot()
          os.system("cp Plot Starting_plot")
          os.system("rm Plot ")
