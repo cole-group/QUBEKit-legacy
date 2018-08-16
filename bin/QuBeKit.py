@@ -528,6 +528,11 @@ def opt(Q_file, Lambda, molecule_name, div_index,divisonarray,tor_limit,N_torsio
     if args.penalty:
        torsionparams=np.array(dih_ref)
        origvalue = np.array(dih_ref)
+       if args.Vn:
+          for i in range(N_parameters,4):
+              for j in range(len(torsionparams)):
+                  torsionparams[j,i] = 0
+                  origvalue[j,i] = 0
     else:
          torsionparams = np.zeros((N_torsions,4))
          origvalue = np.zeros((N_torsions,4))
