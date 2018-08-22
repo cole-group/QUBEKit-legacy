@@ -50,11 +50,11 @@ loc=os.environ.get("QuBeKit")
 try: 
         with open(os.path.join(loc,"bin/new_config.ini")) as source:
             config.readfp( source )
-            theory = config['qm']['theory']
+            theory = str(config['qm']['theory'])
 except:
         with open(os.path.join(loc,"bin/config.ini")) as source:
             config.readfp( source )
-            theory = config['qm']['theory']
+            theory = str(config['qm']['theory'])
 #config.read('config.ini')
 vib_scaling= float(config['qm']['vib_scaling'])
 processors= int(config['qm']['processors'])
@@ -62,7 +62,7 @@ memory= int(config['qm']['memory'])
 dihstart= int(config['fitting']['dihstart'])
 increment= int(config['fitting']['increment'])
 numscan= int(config['fitting']['numscan'])
-T_weight= float(config['fitting']['T_weight'])
+T_weight= str(config['fitting']['T_weight'])
 new_dihnum= int(config['fitting']['new_dihnum'])
 Q_file= config['fitting']['Q_file']
 tor_limit= int(config['fitting']['tor_limit'])
@@ -118,7 +118,7 @@ T_weight= %s
 new_dihnum= %s
 Q_file= %s
 tor_limit= %s
-div_index = %s'''%( config['qm']['theory'], float(config['qm']['vib_scaling']), int(config['qm']['processors']), int(config['qm']['memory']), int(config['fitting']['dihstart']), int(config['fitting']['increment']), int(config['fitting']['numscan']),  float(config['fitting']['T_weight']), int(config['fitting']['new_dihnum']), config['fitting']['Q_file'], int(config['fitting']['tor_limit']), int(config['fitting']['div_index']) ))
+div_index = %s'''%( config['qm']['theory'], float(config['qm']['vib_scaling']), int(config['qm']['processors']), int(config['qm']['memory']), int(config['fitting']['dihstart']), int(config['fitting']['increment']), int(config['fitting']['numscan']),  str(config['fitting']['T_weight']), int(config['fitting']['new_dihnum']), config['fitting']['Q_file'], int(config['fitting']['tor_limit']), int(config['fitting']['div_index']) ))
   
    elif args.config:
        config_main=args.config
@@ -441,27 +441,30 @@ def cmd_prep(dihnum): #Prep the BOSS command file to read our new custom param f
      else:
         out.write(line)
 ###################################################################################################
-def errorcal(Lambda,dih_ref,torsionparams, T_weight):
-    K_b=0.001987
+def errorcal(Lambda,dih_ref,torsionparams, T_weight): #Torsion fitting error calc
+    K_b=0.001987 #Boltzman constant 
     np.set_printoptions(suppress=True, precision=12)
     mm=open('ligandmm','r')
-    qm=open('ligandqm','r') #Does not change between scans maybe keep in memory?
-    linesqm=( line for line in qm)
+    qm=open('ligandqm','r') 
+    linesqm=( line for line in qm)  #gather qm data
     qm_table=np.loadtxt(linesqm, usecols=(0))
-    qm_min=min(qm_table)
+    qm_min=min(qm_table)          #find minimun point to make energy relative to
     linesmm=(line for line in mm)
     mm_table=np.loadtxt(linesmm, usecols=(0))
-    qm_table=(qm_table-qm_min) * 627.509
+    qm_table=(qm_table-qm_min) * 627.509  #convert to kcal/mol
     table=np.array([qm_table, mm_table])
     table = table.T
     np.savetxt('compare', table,  fmt='% 8.6f       % 8.6f')
-    ERRA=(mm_table-qm_table)**2
-    ERRA1=ERRA * np.exp(-qm_table/(K_b*T_weight))
+    ERRA=(mm_table-qm_table)**2   
     ERRS=math.sqrt(np.sum(ERRA)/(numscan))
-    ERRS1=math.sqrt(np.sum(ERRA1)/(numscan))
-    penalty= Lambda * np.sum(np.absolute(dih_ref-torsionparams))
+    if T_weight != 'infinity':   #if T_weight has been changed use weighting
+       ERRA1=ERRA * np.exp(-qm_table/(K_b*float(T_weight)))
+       ERRS1=math.sqrt(np.sum(ERRA1)/(numscan))
+    else:   #do not use weighting coresponds to T_weight = infinity
+       ERRS1=ERRS
+    penalty= Lambda * np.sum(np.absolute(dih_ref-torsionparams))  #calculate pentaly with user lambda
     sumerror=(ERRS1 + penalty)
-    return sumerror, penalty
+    return sumerror, penalty  #return the total error and the pentaly contribution
 ###################################################################################################
 def starting_error( Q_file, Lambda, N_torsions):
     dih_ref = ref_find(N_torsions)
@@ -518,7 +521,7 @@ def py_plot():
     Fitted_data = plt.plot(angle, fitted, label='Final parameters', color='black')
     plt.title("Relative energy as a function of torsion angle %s"%(dihnum))
     plt.xlabel("Torsion angle$^{\circ}$")
-    plt.ylabel("Relative energy Kcal/mol")
+    plt.ylabel("Relative energy kcal/mol")
     plt.legend(loc=1)
     #fig=plt.plot(angle,QM, 'bo', angle, MM, 'r--', angle, fitted, 'k')
     plt.savefig('Scan.pdf')
