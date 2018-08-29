@@ -20,6 +20,7 @@ After relaunching the terminal you should now be able to use QUBEKit, try the fo
 ## Requirements:
 * [Anaconda3](https://www.anaconda.com/download/)
 * [Biochemical and Organic Simulation System (BOSS)](http://zarbi.chem.yale.edu/software.html)
+* [OpenMM](http://openmm.org/)
 * [Gaussian09](http://gaussian.com/)
 * [ONETEP](http://www.onetep.org/)
 * [Matlab 2017](https://uk.mathworks.com/products/matlab.html)
