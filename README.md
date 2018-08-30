@@ -33,4 +33,4 @@ After relaunching the terminal you should now be able to use QUBEKit, try the fo
 
 ## In Development
 
-QUBEKit should currently be considered a work in progress. While it is stable we are constantly working to improve the code and increase the amount of compatible software. A user tutorial can be found on our [Github](https://github.com/cole-group/QuBeKit/wiki) wiki page. 
+QUBEKit should currently be considered a work in progress. While it is stable we are constantly working to improve the code and increase the amount of compatible software. A user tutorial can be found on our Github [wiki](https://github.com/cole-group/QuBeKit/wiki) page. 
