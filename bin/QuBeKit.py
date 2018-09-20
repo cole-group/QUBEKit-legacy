@@ -494,9 +494,9 @@ def plot():
     plot=open('Plot','w+')
     plot.write('Torsion energy comparison\n')
     plot.write('Angle  QM energy   MM energy\n')
-    angles=np.linspace(0, 360, 25)
+    angles=np.linspace(dihstart, dihstart+increment*(numscan-1),  numscan)
     i=0
-    while i < 25:
+    while i < numscan:
      plot.write("% 3i   % 3.6f   % 3.6f\n"%(angles[i],comp_table[i,0],comp_table[i,1]))
      i=i+1
     return None
