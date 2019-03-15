@@ -201,7 +201,7 @@ ligand
     for line in lines:
       if 'HETATM' in line:
        tag= line.split()[2][:2].translate(remove_digits)
-       out.write('%-2s      %9.6f    %9.6f    %9.6f\n'%(tag, float(line.split()[6]), float(line.split()[7]), float(line.split()[8])))
+       out.write('%-2s      %9.6f    %9.6f    %9.6f\n'%(tag, float(line[30:38]), float(line[38:46]), float(line[46:54])))
     out.write('\n')
     out.write('\n')
     out.write('\n')
@@ -1486,7 +1486,7 @@ def GMX_gro(pdb_name):  #make the GMX gro file from the PDB file
         Atom_names_sites=[]
         for line in lines:
            if 'HETATM' in line:
-               out.write('    1%s    %s   %2i%8.3f%8.3f%8.3f\n'%(resname, line.split()[2], int(line.split()[1]), float(line.split()[6])/10, float(line.split()[7])/10, float(line.split()[8])/10))
+               out.write('    1%s    %s   %2i%8.3f%8.3f%8.3f\n'%(resname, line.split()[2], int(line.split()[1]), float(line[30:38])/10, float(line[38:46])/10, float(line[46:54])/10))
                Atom_names_sites.append(line.split()[2]) 
                o_tag=line.split()[3]
         out.write('%10.5f%10.5f%10.5f\n'%(1,1,1))
