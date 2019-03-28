@@ -8,18 +8,18 @@ echo "install here[y/n] "
 read answer
 
 if [ $answer == 'y' ]; then
-   mkdir QuBeKit
-   mv bin/ matlab/ onetep/ README.md QuBeKit
-   cd QuBeKit/bin
-   chmod +x QuBeKit.py 
+   mkdir QUBEKit
+   mv bin/ matlab/ onetep/ README.md QUBEKit
+   cd QUBEKit/bin
+   chmod +x QUBEKit.py 
    cd ../../
    path=`pwd`
    cd
    echo "" >> .bashrc
-   echo "#added by QuBeKit" >> .bashrc
-   echo "export PATH=\"$path/QuBeKit/bin:\$PATH\"" >> .bashrc
-   echo "export QuBeKit=\"$path/QuBeKit/\"" >> .bashrc
-   echo "QuBeKit installed"
+   echo "#added by QUBEKit" >> .bashrc
+   echo "export PATH=\"$path/QUBEKit/bin:\$PATH\"" >> .bashrc
+   echo "export QUBEKit=\"$path/QUBEKit/\"" >> .bashrc
+   echo "QUBEKit installed"
    
 else
  echo "exiting"
