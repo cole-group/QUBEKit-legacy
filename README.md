@@ -6,6 +6,7 @@
 Users who have used QUBEKit to derive any new force field parameters should cite the following papers:
 * [Biomolecular Force Field Parameterization via Atoms-in-Molecule Electron Density Partitioning](https://pubs.acs.org/doi/abs/10.1021/acs.jctc.6b00027)
 * [Harmonic Force Constants for Molecular Mechanics Force Fields via Hessian Matrix Projection](https://pubs.acs.org/doi/10.1021/acs.jctc.7b00785)
+[QUBEKit: Automating the Derivation of Force Field Parameters from Quantum Mechanics](https://pubs.acs.org/doi/10.1021/acs.jcim.8b00767)
 
 To install we recommend cloning the QUBEKit folder into a home directory and running the install script which will append the script to the search path:
 
