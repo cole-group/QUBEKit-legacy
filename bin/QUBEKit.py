@@ -46,7 +46,7 @@ XML_GMX_list=[0, 160, 161, 162, 221, 277] #this list should not need to be chang
 #config test
 config = configparser.RawConfigParser()
 #look for config file 
-loc=os.environ.get("QuBeKit")
+loc=os.environ.get("QUBEKit")
 try: 
         with open(os.path.join(loc,"bin/new_config.ini")) as source:
             config.readfp( source )
@@ -69,14 +69,14 @@ tor_limit= int(config['fitting']['tor_limit'])
 div_index = int(config['fitting']['div_index'])
 #config load
 ###################################################################################################
-parser = argparse.ArgumentParser(prog='QuBeKit.py', formatter_class=argparse.RawDescriptionHelpFormatter,
+parser = argparse.ArgumentParser(prog='QUBEKit.py', formatter_class=argparse.RawDescriptionHelpFormatter,
 description="""
 Utility for the derivation of specific ligand parameters
 Requires BOSS make sure BOSSdir is set in bashrc
 Example input to write the bond and angles input file for g09 from a zmat file
-python QuBeKit.py -f bonds -t write -z toluene.z -c 0 -m 1
+python QUBEKit.py -f bonds -t write -z toluene.z -c 0 -m 1
 File names NB/NBV non-bonded with/out virtual sites, BA bonds and angles fited, D dihedrals fitted
-Final file name QuBe will be wrote when xml and GMX files are made
+Final file name QUBE will be wrote when xml and GMX files are made
 """)
 parser.add_argument('-f', "--function", help='Enter the function you wish to use bonds (covers bonds and angles terms), dihedrals and charges etc')
 parser.add_argument('-t', "--type", help='Enter the function type you want this can be write , fit or analyse in the case of dihedrals (xyz charge input is wrote when bonds are fit) when writing and fitting dihedrals you will be promted for the zmat index scanning')
@@ -91,17 +91,17 @@ parser.add_argument('-l', '--penalty', help='The penalty used in torsion fitting
 parser.add_argument('-d', '--dihedral', help='Enter the dihedral number to be fit, default will look at what SCAN folder it is running in')
 parser.add_argument('-FR', '--frequency', help='Option to perform a QM MM frequency comparison, options yes default no')
 parser.add_argument('-SP', '--singlepoint', help='Option to perform a single point energy calculation in openMM to make sure the eneries match (OPLS combination rule is used)')
-parser.add_argument('-r', '--replace', help='Option to replace any valid dihedral terms in a molecule with QuBeKit previously optimised values. These dihedrals will be ignored in subsequent optimizations')
+parser.add_argument('-r', '--replace', help='Option to replace any valid dihedral terms in a molecule with QUBEKit previously optimised values. These dihedrals will be ignored in subsequent optimizations')
 parser.add_argument('-con', '--config', nargs='+', help='''Update global default options
 qm: theory, vib_scaling, processors, memory.
 fitting: dihstart, increment, numscan, T_weight, new_dihnum, Q_file, tor_limit, div_index
-example: QuBeKit.py -con qm.theory wB97XD/6-311++G(d,p)''')
+example: QUBEKit.py -con qm.theory wB97XD/6-311++G(d,p)''')
 args = parser.parse_args()
 ###################################################################################################
 #option to edit global config parameters 
 if args.config:
    if args.config[0] == 'reset':
-      os.system('rm $QuBeKit/bin/new_config.ini ')
+      os.system('rm $QUBEKit/bin/new_config.ini ')
       sys.exit('Config file reset to default')
    elif args.config[0] == 'show':
         sys.exit('''Config options:
@@ -393,7 +393,7 @@ def DIHEDRALS_fit(): #Main dihedral fitting function, calls sub functions to run
     new_zmat(molecule_name)
     #ref_find(N_torsions) 
     os.system(' rm dihedral_list.dat Enviroment_dihedral_list.dat ligandqm dihzmat log')
-    os.system(' cp oplsaa.par ../../QuBe_PARAMS/QuBe.par')   
+    os.system(' cp oplsaa.par ../../QUBE_PARAMS/QUBE.par')   
     print('''==================================================================================================''')         
 ###################################################################################################
 def clean(): #Clean the outputs of each MM scan 
@@ -416,7 +416,7 @@ def write_to_par(torsionparams, N_torsions, tor_string): #Write the updated para
      out=open('oplsaa.par', 'a')
      for i in range(N_torsions):
          no=new_dihnum+i
-         out.write('%s  % 4.3f    % 4.3f    % 4.3f    % 4.3f      %s-%s-%s-%s     **NEWQuBe**\n' %(no, torsionparams[i,0], torsionparams[i,1], torsionparams[i,2], torsionparams[i,3], tor_string[i,0], tor_string[i,1], tor_string[i,2], tor_string[i,3])) 
+         out.write('%s  % 4.3f    % 4.3f    % 4.3f    % 4.3f      %s-%s-%s-%s     **NEWQUBE**\n' %(no, torsionparams[i,0], torsionparams[i,1], torsionparams[i,2], torsionparams[i,3], tor_string[i,0], tor_string[i,1], tor_string[i,2], tor_string[i,3])) 
      out.close()
      return None
 ###################################################################################################    
@@ -1027,7 +1027,7 @@ def BONDS_fit():
           print('No errors found now fitting new bonds and angles using MATLAB')
           if "lig.fchk" not in os.listdir("."):
               os.system('formchk lig.chk lig.fchk')
-          os.system('cp $QuBeKit/matlab/* .')
+          os.system('cp $QUBEKit/matlab/* .')
           os.system('cp $BOSSdir/oplsaa.sb .')
           os.system("sed -i 's/..\/bonds/..\/BONDS/g' test.m")
           os.system("sed -i 's/..\/bonds/..\/BONDS/g' test.m")
@@ -1048,7 +1048,7 @@ def BONDS_fit():
           f=open("Modified_Scaled_Seminario.sb","r")
           lines=f.readlines()
           x=(len(lines))-2
-          out=open("QuBe.sb","w+")
+          out=open("QUBE.sb","w+")
           f2=open("oplsaa.sb","r")
           lines2=f2.readlines()
           for (n, line) in enumerate(lines[0:x]):
@@ -1062,7 +1062,7 @@ def BONDS_fit():
                         out.write(line[0:8].lower()+line[8:])
           for line in lines2[L2+1:]:
                           out.write(line)
-          print('New bonds wrote to QuBe.sb') 
+          print('New bonds wrote to QUBE.sb') 
           print('Now extracting xyz onetep input')
           with open('zmat.log') as log:
              for (i,line) in enumerate(log):
@@ -1111,7 +1111,7 @@ def BONDS_fit():
            out.write(line.lower())
         else:
            out.write(line)
-    print('New zmat (%s_BA.z) made with new bonds and angles, to use new parameters make sure QuBe.sb is present'%(molecule_name))       
+    print('New zmat (%s_BA.z) made with new bonds and angles, to use new parameters make sure QUBE.sb is present'%(molecule_name))       
 ###################################################################################################
 def dih_tag(molecule_name):
     global G1, V1, A1, D1, Q1
@@ -1615,7 +1615,7 @@ module load MATLAB/2017a
 
 module load Anaconda3/5.0.1 
 
-QuBeKit.py -f bonds -t fit -z %s.z 
+QUBEKit.py -f bonds -t fit -z %s.z 
     '''%(processors, molecule_name))
 ###################################################################################################
 def DIHEDRALS_sub(): 
@@ -1632,147 +1632,147 @@ g09 < zmat.com > zmat.log
 ###################################################################################################
 def Param_search(molecule_name, new_dihnum):  
     global BA      
-    print('Looking for QuBe bonds files')
-    if "QuBe.sb" in os.listdir("../../QuBe_PARAMS"):
+    print('Looking for QUBE bonds files')
+    if "QUBE.sb" in os.listdir("../../QUBE_PARAMS"):
         print('Bonds and Angles file found will be used')
-        os.system('cp ../../QuBe_PARAMS/QuBe.sb .')
+        os.system('cp ../../QUBE_PARAMS/QUBE.sb .')
         BA=1
     else:
         print('No new bonds and angles found using opls values') 
         os.system('cp $BOSSdir/oplsaa.sb .')
         BA=0
-    if "%s_NB_BAD.z"%(molecule_name) in os.listdir("../../QuBe_PARAMS") or "%s_NBV_BAD.z"%(molecule_name) in os.listdir("../../QuBe_PARAMS"):
+    if "%s_NB_BAD.z"%(molecule_name) in os.listdir("../../QUBE_PARAMS") or "%s_NBV_BAD.z"%(molecule_name) in os.listdir("../../QUBE_PARAMS"):
         use=input('Other dihedral fitted parameters found (this is the case when fitting multiple torsions) would you like to use these?:\n> ')
         if use=='yes' or use == 'y':
-           if "%s_NBV_BAD.z"%(molecule_name) in os.listdir("../../QuBe_PARAMS"):
+           if "%s_NBV_BAD.z"%(molecule_name) in os.listdir("../../QUBE_PARAMS"):
                print("Non-bonded parameters with virtual sites found")
                molecule_name=molecule_name+'_NBV_BAD'
            else:
                print("Non-bonded parameters found")
                molecule_name=molecule_name+'_NB_BAD'
-           os.system('cp ../../QuBe_PARAMS/%s.z .'%(molecule_name))
-           os.system('cp ../../QuBe_PARAMS/QuBe.par oplsaa.par')
+           os.system('cp ../../QUBE_PARAMS/%s.z .'%(molecule_name))
+           os.system('cp ../../QUBE_PARAMS/QUBE.par oplsaa.par')
            os.system('cp oplsaa.par oplsstore')
            par=open('oplsstore','r')
            lines=par.readlines()
            for (i,line) in enumerate(lines):
-               if 'NEWQuBe' in line:
+               if 'NEWQUBE' in line:
                    new_dihnum=int(line.split()[0])+1            
         else:
             os.system('cp $BOSSdir/oplsaa.par .')
             os.system('cp oplsaa.par oplsstore') 
             new_dihnum=new_dihnum
-            if "%s_NBV_BA.z"%(molecule_name) in os.listdir("../../QuBe_PARAMS"):
+            if "%s_NBV_BA.z"%(molecule_name) in os.listdir("../../QUBE_PARAMS"):
                 print("Non-bonded parameters with virtual sites found and will be used")
                 molecule_name=molecule_name+'_NBV_BA'
-                os.system("cp ../../QuBe_PARAMS/%s.z ."%(molecule_name))
-            elif "%s_NB_BA.z"%(molecule_name) in os.listdir("../../QuBe_PARAMS"):
+                os.system("cp ../../QUBE_PARAMS/%s.z ."%(molecule_name))
+            elif "%s_NB_BA.z"%(molecule_name) in os.listdir("../../QUBE_PARAMS"):
                 print("Non-bonded parameters found and will be used")
                 molecule_name=molecule_name+'_NB_BA'
-                os.system("cp ../../QuBe_PARAMS/%s.z ."%(molecule_name))
-            elif "%s_NBV.z"%(molecule_name) in os.listdir("../../QuBe_PARAMS"):
+                os.system("cp ../../QUBE_PARAMS/%s.z ."%(molecule_name))
+            elif "%s_NBV.z"%(molecule_name) in os.listdir("../../QUBE_PARAMS"):
                  print("Non-bonded parameters with virtual sites found and will be used")
                  molecule_name=molecule_name+'_NBV'
-                 os.system("cp ../../QuBe_PARAMS/%s.z ."%(molecule_name))    
-            elif "%s_NB.z"%(molecule_name) in os.listdir("../../QuBe_PARAMS"):
+                 os.system("cp ../../QUBE_PARAMS/%s.z ."%(molecule_name))    
+            elif "%s_NB.z"%(molecule_name) in os.listdir("../../QUBE_PARAMS"):
                  print("Non-bonded parameters found and will be used")
                  molecule_name=molecule_name+'_NB'
-                 os.system("cp ../../QuBe_PARAMS/%s.z ."%(molecule_name))
-    elif "%s_BAD.z"%(molecule_name) in os.listdir("../../QuBe_PARAMS"):
+                 os.system("cp ../../QUBE_PARAMS/%s.z ."%(molecule_name))
+    elif "%s_BAD.z"%(molecule_name) in os.listdir("../../QUBE_PARAMS"):
           use=input('Other dihedral fitted parameters found (this is the case when fitting multiple torsions) would you like to use these?:\n> ')
           if use=='yes' or use == 'y':
-             os.system('cp ../../QuBe_PARAMS/QuBe.par oplsaa.par')
+             os.system('cp ../../QUBE_PARAMS/QUBE.par oplsaa.par')
              os.system('cp oplsaa.par oplsstore')
              par=open('oplsstore','r')
              lines=par.readlines()
              for (i,line) in enumerate(lines):
-                 if 'NEWQuBe' in line:
+                 if 'NEWQUBE' in line:
                      new_dihnum=int(line.split()[0])+1              
           else:
                os.system('cp $BOSSdir/oplsaa.par .')
                os.system('cp oplsaa.par oplsstore')
                new_dihnum=new_dihnum 
-               if "%s_NBV_BA.z"%(molecule_name) in os.listdir("../../QuBe_PARAMS"):
+               if "%s_NBV_BA.z"%(molecule_name) in os.listdir("../../QUBE_PARAMS"):
                    print("Non-bonded parameters found and will be used")
                    molecule_name=molecule_name+'_NBV_BA'
-                   os.system("cp ../../QuBe_PARAMS/%s.z ."%(molecule_name))
-               elif "%s_NB_BA.z"%(molecule_name) in os.listdir("../../QuBe_PARAMS"):
+                   os.system("cp ../../QUBE_PARAMS/%s.z ."%(molecule_name))
+               elif "%s_NB_BA.z"%(molecule_name) in os.listdir("../../QUBE_PARAMS"):
                    print("Non-bonded parameters found and will be used")
                    molecule_name=molecule_name+'_NB_BA'
-                   os.system("cp ../../QuBe_PARAMS/%s.z ."%(molecule_name))
-               elif "%s_NBV.z"%(molecule_name) in os.listdir("../../QuBe_PARAMS"):
+                   os.system("cp ../../QUBE_PARAMS/%s.z ."%(molecule_name))
+               elif "%s_NBV.z"%(molecule_name) in os.listdir("../../QUBE_PARAMS"):
                      print("Non-bonded parameters found and will be used")
                      molecule_name=molecule_name+'_NBV'
-                     os.system("cp ../../QuBe_PARAMS/%s.z ."%(molecule_name))    
-               elif "%s_NB.z"%(molecule_name) in os.listdir("../../QuBe_PARAMS"):
+                     os.system("cp ../../QUBE_PARAMS/%s.z ."%(molecule_name))    
+               elif "%s_NB.z"%(molecule_name) in os.listdir("../../QUBE_PARAMS"):
                      print("Non-bonded parameters found and will be used")
                      molecule_name=molecule_name+'_NB'
-                     os.system("cp ../../QuBe_PARAMS/%s.z ."%(molecule_name))
-    elif "%s_D.z"%(molecule_name) in os.listdir("../../QuBe_PARAMS"):
+                     os.system("cp ../../QUBE_PARAMS/%s.z ."%(molecule_name))
+    elif "%s_D.z"%(molecule_name) in os.listdir("../../QUBE_PARAMS"):
           use=input('Other dihedral fitted parameters found (this is the case when fitting multiple torsions) would you like to use these?:\n> ')
           if use=='yes' or use == 'y':
-             os.system('cp ../../QuBe_PARAMS/QuBe.par oplsaa.par')
+             os.system('cp ../../QUBE_PARAMS/QUBE.par oplsaa.par')
              os.system('cp oplsaa.par oplsstore')
              par=open('oplsstore','r')
              lines=par.readlines()
              for (i,line) in enumerate(lines):
-                 if 'NEWQuBe' in line:
+                 if 'NEWQUBE' in line:
                      new_dihnum=int(line.split()[0])+1              
           else:
                os.system('cp $BOSSdir/oplsaa.par .')
                os.system('cp oplsaa.par oplsstore')
                new_dihnum=new_dihnum 
-               if "%s_NBV_BA.z"%(molecule_name) in os.listdir("../../QuBe_PARAMS"):
+               if "%s_NBV_BA.z"%(molecule_name) in os.listdir("../../QUBE_PARAMS"):
                    print("Non-bonded parameters found and will be used")
                    molecule_name=molecule_name+'_NBV_BA'
-                   os.system("cp ../../QuBe_PARAMS/%s.z ."%(molecule_name))
-               elif "%s_NB_BA.z"%(molecule_name) in os.listdir("../../QuBe_PARAMS"):
+                   os.system("cp ../../QUBE_PARAMS/%s.z ."%(molecule_name))
+               elif "%s_NB_BA.z"%(molecule_name) in os.listdir("../../QUBE_PARAMS"):
                    print("Non-bonded parameters found and will be used")
                    molecule_name=molecule_name+'_NB_BA'
-                   os.system("cp ../../QuBe_PARAMS/%s.z ."%(molecule_name))
-               elif "%s_NBV.z"%(molecule_name) in os.listdir("../../QuBe_PARAMS"):
+                   os.system("cp ../../QUBE_PARAMS/%s.z ."%(molecule_name))
+               elif "%s_NBV.z"%(molecule_name) in os.listdir("../../QUBE_PARAMS"):
                      print("Non-bonded parameters found and will be used")
                      molecule_name=molecule_name+'_NBV'
-                     os.system("cp ../../QuBe_PARAMS/%s.z ."%(molecule_name))    
-               elif "%s_NB.z"%(molecule_name) in os.listdir("../../QuBe_PARAMS"):
+                     os.system("cp ../../QUBE_PARAMS/%s.z ."%(molecule_name))    
+               elif "%s_NB.z"%(molecule_name) in os.listdir("../../QUBE_PARAMS"):
                      print("Non-bonded parameters found and will be used")
                      molecule_name=molecule_name+'_NB'
-                     os.system("cp ../../QuBe_PARAMS/%s.z ."%(molecule_name))                     
-    elif "%s_NBV_BA.z"%(molecule_name) in os.listdir("../../QuBe_PARAMS"):
+                     os.system("cp ../../QUBE_PARAMS/%s.z ."%(molecule_name))                     
+    elif "%s_NBV_BA.z"%(molecule_name) in os.listdir("../../QUBE_PARAMS"):
           print('Non-bonded parameters with virtual sites found and will be used')
           molecule_name=molecule_name+'_NBV_BA'
-          os.system('cp ../../QuBe_PARAMS/%s.z .'%(molecule_name))
-          if "QuBe.par" in os.listdir("../../QuBe_PARAMS"): 
-              print('QuBe replaced zmat and par files found')
-              os.system('cp ../../QuBe_PARAMS/QuBe.par oplsaa.par')
+          os.system('cp ../../QUBE_PARAMS/%s.z .'%(molecule_name))
+          if "QUBE.par" in os.listdir("../../QUBE_PARAMS"): 
+              print('QUBE replaced zmat and par files found')
+              os.system('cp ../../QUBE_PARAMS/QUBE.par oplsaa.par')
           else:
                os.system('cp $BOSSdir/oplsaa.par .')
           os.system('cp oplsaa.par oplsstore')                        
-    elif "%s_NB_BA.z"%(molecule_name) in os.listdir("../../QuBe_PARAMS"):
+    elif "%s_NB_BA.z"%(molecule_name) in os.listdir("../../QUBE_PARAMS"):
           print('Non-bonded parameters found and will be used')
           molecule_name=molecule_name+'_NB_BA'
-          os.system('cp ../../QuBe_PARAMS/%s.z .'%(molecule_name))
-          if "QuBe.par" in os.listdir("../../QuBe_PARAMS"): 
-              print('QuBe replaced zmat and par files found')
-              os.system('cp ../../QuBe_PARAMS/QuBe.par oplsaa.par')
+          os.system('cp ../../QUBE_PARAMS/%s.z .'%(molecule_name))
+          if "QUBE.par" in os.listdir("../../QUBE_PARAMS"): 
+              print('QUBE replaced zmat and par files found')
+              os.system('cp ../../QUBE_PARAMS/QUBE.par oplsaa.par')
           else:
                os.system('cp $BOSSdir/oplsaa.par .')
           os.system('cp oplsaa.par oplsstore') 
-    elif "%s_NBV.z"%(molecule_name) in os.listdir("../../QuBe_PARAMS"):
+    elif "%s_NBV.z"%(molecule_name) in os.listdir("../../QUBE_PARAMS"):
           print('only non bonded parameters found and will be used')
           molecule_name=molecule_name+'_NBV'
-          os.system('cp ../../QuBe_PARAMS/%s.z .'%(molecule_name))
+          os.system('cp ../../QUBE_PARAMS/%s.z .'%(molecule_name))
           os.system('cp $BOSSdir/oplsaa.par .')
           os.system('cp oplsaa.par oplsstore')       
-    elif "%s_NB.z"%(molecule_name) in os.listdir("../../QuBe_PARAMS"):
+    elif "%s_NB.z"%(molecule_name) in os.listdir("../../QUBE_PARAMS"):
           print('only non bonded parameters found and will be used')
           molecule_name=molecule_name+'_NB'
-          os.system('cp ../../QuBe_PARAMS/%s.z .'%(molecule_name))
+          os.system('cp ../../QUBE_PARAMS/%s.z .'%(molecule_name))
           os.system('cp $BOSSdir/oplsaa.par .')
           os.system('cp oplsaa.par oplsstore') 
-    elif "%s_BA.z"%(molecule_name) in os.listdir("../../QuBe_PARAMS"):
+    elif "%s_BA.z"%(molecule_name) in os.listdir("../../QUBE_PARAMS"):
           molecule_name=molecule_name+'_BA'
-          os.system('cp ../../QuBe_PARAMS/%s.z .'%(molecule_name))
+          os.system('cp ../../QUBE_PARAMS/%s.z .'%(molecule_name))
           os.system('cp $BOSSdir/oplsaa.par .')
           os.system('cp oplsaa.par oplsstore')
     else:
@@ -1782,7 +1782,7 @@ def Param_search(molecule_name, new_dihnum):
           os.system('cp oplsaa.par oplsstore')     
           os.system("sed -i 's/$BOSSdir\/oplsaa.par/.\/oplsaa.par/g' dihcmd")
     if BA==1:
-             os.system("sed -i 's/$boxes\/oplsaa.sb/QuBe.sb/g' dihcmd")
+             os.system("sed -i 's/$boxes\/oplsaa.sb/QUBE.sb/g' dihcmd")
     os.system('''sed -i 's/set lambda = "30.000 0.000 0.000"/set lambda = "%6.3f 0.000 0.000"/g' dihcmd'''%(increment))
     os.system(''' sed -i 's/$BOSSdir\/oplsaa.par/.\/oplsaa.par/g' dihcmd''')
     if "ligandqm" in os.listdir(".") or "ligandmm" in os.listdir("."):
@@ -2063,7 +2063,7 @@ def xml_addextras():
 ###################################################################################################
 def FREQ(): #same method as in the Modified Seminario paper
     where=os.getcwd()
-    if 'XML+GMX' in where or 'QuBe_PARAMS' in where:
+    if 'XML+GMX' in where or 'QUBE_PARAMS' in where:
         print("Performing virbational frequency QM MM comparison")
         print("Looking for zmat.log file")
         if 'zmat.log' in os.listdir("."):
@@ -2092,9 +2092,9 @@ def FREQ(): #same method as in the Modified Seminario paper
         #Now find the MM frequencies using parameters acording to the file name
         os.system("cp $BOSSdir/scripts/FREQcmd .")
         if  "_BAD" in molecule_name:  #assuming you always have new bonds as charges have little effect alone
-            os.system("sed -i 's/$BOSSdir\/oplsaa.par/QuBe.par/g' FREQcmd")
+            os.system("sed -i 's/$BOSSdir\/oplsaa.par/QUBE.par/g' FREQcmd")
         if "_BA" in molecule_name:
-            os.system("sed -i 's/$BOSSdir\/oplsaa.sb/QuBe.sb/g' FREQcmd")
+            os.system("sed -i 's/$BOSSdir\/oplsaa.sb/QUBE.sb/g' FREQcmd")
         os.system("cp %s.z optzmat"%(molecule_name))
         os.system("csh FREQcmd > /dev/null 2>&1")
         MMin=open('out','r')
@@ -2128,7 +2128,7 @@ def FREQ(): #same method as in the Modified Seminario paper
         print("Mean percentage error across frequencies = %5.3f"%(mean_percent))
         print("Mean unsigned error across frequencies = %6.3f"%(mean_error))
     else:
-        sys.exit('Please move to QuBe_PARAMS or XML+GMX folder before running')
+        sys.exit('Please move to QUBE_PARAMS or XML+GMX folder before running')
 ###################################################################################################
 def find_shortest_path(graph, start, end, path=[]):
         path = path + [start]
@@ -2199,11 +2199,11 @@ def SING_P(): #single point boss openMM comparison
         print('Performing BOSS and OpenMM single point energy comparison')
         if "_BAD" in molecule_name:
           os.system('cp $BOSSdir/scripts/SPMcmd .')
-          os.system("sed -i 's/$BOSSdir\/oplsaa.par/QuBe.par/g' SPMcmd")
-          os.system("sed -i 's/$BOSSdir\/oplsaa.sb/QuBe.sb/g' SPMcmd")
+          os.system("sed -i 's/$BOSSdir\/oplsaa.par/QUBE.par/g' SPMcmd")
+          os.system("sed -i 's/$BOSSdir\/oplsaa.sb/QUBE.sb/g' SPMcmd")
         elif "_BA" in molecule_name:
             os.system('cp $BOSSdir/scripts/SPMcmd .')
-            os.system("sed -i 's/$BOSSdir\/oplsaa.sb/QuBe.sb/g' SPMcmd")
+            os.system("sed -i 's/$BOSSdir\/oplsaa.sb/QUBE.sb/g' SPMcmd")
         else: 
             os.system('cp $BOSSdir/oplsaa* .')             
             os.system('cp $BOSSdir/scripts/SPMcmd .')
@@ -2265,10 +2265,10 @@ def SING_P(): #single point boss openMM comparison
     energy = str(state.getPotentialEnergy())
     print('OpenMM single point energy = %10.4f kcal/mol'%(float(energy[:-6])/4.184))
 ###################################################################################################
-def Replace(): #Replace QuBeKit optimised torsions
-    if 'QuBe_PARAMS' not in os.getcwd():
-        sys.exit('Please use replace inside of the QuBe_PARAMS folder with the highst parameterised molecule zmat this should be name_NB/V_BA.z')
-    os.system('cp $QuBeKit/bin/QuBeKit_torsions.dat .')
+def Replace(): #Replace QUBEKit optimised torsions
+    if 'QUBE_PARAMS' not in os.getcwd():
+        sys.exit('Please use replace inside of the QUBE_PARAMS folder with the highst parameterised molecule zmat this should be name_NB/V_BA.z')
+    os.system('cp $QUBEKit/bin/QUBEKit_torsions.dat .')
     G1, V1, A1, D1, Q1 =dih_tag(molecule_name)
     var_dihs=np.zeros((A1-(V1+1),2))
     i=0
@@ -2304,21 +2304,21 @@ def Replace(): #Replace QuBeKit optimised torsions
             continue
     QM_names=np.reshape(QM_names, (int(len(QM_names)/2),2))
     #print(QM_names)
-    QuBe=open('QuBeKit_torsions.dat','r') #get the QuBe torsions
-    QuBe_lines=QuBe.readlines()
-    os.system('cp $BOSSdir/oplsaa.par QuBe.par')
-    par=open('QuBe.par','a')
+    QUBE=open('QUBEKit_torsions.dat','r') #get the QUBE torsions
+    QUBE_lines=QUBE.readlines()
+    os.system('cp $BOSSdir/oplsaa.par QUBE.par')
+    par=open('QUBE.par','a')
     found_torsions=[]
-    for line in QuBe_lines[2:]:
+    for line in QUBE_lines[2:]:
         write_par=True
-        for x in range(len(dihedral_list)):   #check to see it the molecule has torsions in the QuBe file
+        for x in range(len(dihedral_list)):   #check to see it the molecule has torsions in the QUBE file
             if int(dihedral_list[x,4]) not in improper_list:
                if QM_names[int(dihedral_list[x,0])-3,1]+'-'+QM_names[int(dihedral_list[x,1])-3,1]+'-'+QM_names[int(dihedral_list[x,2])-3,1]+'-'+QM_names[int(dihedral_list[x,3])-3,1] in line or QM_names[int(dihedral_list[x,3])-3,1]+'-'+QM_names[int(dihedral_list[x,2])-3,1]+'-'+QM_names[int(dihedral_list[x,1])-3,1]+'-'+QM_names[int(dihedral_list[x,0])-3,1] in line:
                   #print(dihedral_list[x])
                   #print(line.split()[0])
-                  dihedral_list[x,4]=int(line.split()[0]) #if it does change the type number to the QuBe value
-                  if write_par: #for each torsion in the molecule append the QuBe value to a par file once!
-                     par.write('%s  % 4.3f    % 4.3f    % 4.3f    % 4.3f      %s-%s-%s-%s     **NEWQuBe**\n' %(int(line.split()[0]), float(line.split()[1]), float(line.split()[2]), float(line.split()[3]), float(line.split()[4]), QM_names[int(dihedral_list[x,0])-3,1], QM_names[int(dihedral_list[x,1])-3,1], QM_names[int(dihedral_list[x,2])-3,1], QM_names[int(dihedral_list[x,3])-3,1]))
+                  dihedral_list[x,4]=int(line.split()[0]) #if it does change the type number to the QUBE value
+                  if write_par: #for each torsion in the molecule append the QUBE value to a par file once!
+                     par.write('%s  % 4.3f    % 4.3f    % 4.3f    % 4.3f      %s-%s-%s-%s     **NEWQUBE**\n' %(int(line.split()[0]), float(line.split()[1]), float(line.split()[2]), float(line.split()[3]), float(line.split()[4]), QM_names[int(dihedral_list[x,0])-3,1], QM_names[int(dihedral_list[x,1])-3,1], QM_names[int(dihedral_list[x,2])-3,1], QM_names[int(dihedral_list[x,3])-3,1]))
                      write_par=False
                      found_torsions.extend([QM_names[int(dihedral_list[x,0])-3,1], QM_names[int(dihedral_list[x,1])-3,1], QM_names[int(dihedral_list[x,2])-3,1], QM_names[int(dihedral_list[x,3])-3,1] ])
     #print(dihedral_list)
@@ -2338,7 +2338,7 @@ def Replace(): #Replace QuBeKit optimised torsions
               zmat=open('%sD.z'%(molecule_name),'w+')
               print('All variable torsions replaced')
               
-       #Now we need to write a new zmat with the replaced QuBe torsions
+       #Now we need to write a new zmat with the replaced QUBE torsions
        i=0
        for (n, line) in enumerate(lines):
            if V1 < n < A1: 
@@ -2353,9 +2353,9 @@ def Replace(): #Replace QuBeKit optimised torsions
 Old molecule data saved as %s.dat'''%(molecule_name, molecule_name))
        zmat.close()
     else:
-          os.system('rm QuBe.par') 
+          os.system('rm QUBE.par') 
           print('No torsions could be replaced')
-    os.system('rm QuBeKit_torsions.dat')   
+    os.system('rm QUBEKit_torsions.dat')   
    
 ###################################################################################################
 #command list
@@ -2417,10 +2417,10 @@ elif args.function == 'bonds' and args.type == 'fit' and args.zmat:
          os.system('mv BONDS/%s.xyz CHARGES/'%(molecule_name))
          os.system('cp %s.z CHARGES/'%(molecule_name))
          print('onetep xyz file wrote to new folder charges')
-         if 'QuBe_PARAMS' not in os.listdir("."):
-             os.system('mkdir QuBe_PARAMS')
-         os.system('cp BONDS/QuBe.sb QuBe_PARAMS')
-         os.system('mv BONDS/%s_BA.z QuBe_PARAMS/'%(molecule_name))
+         if 'QUBE_PARAMS' not in os.listdir("."):
+             os.system('mkdir QUBE_PARAMS')
+         os.system('cp BONDS/QUBE.sb QUBE_PARAMS')
+         os.system('mv BONDS/%s_BA.z QUBE_PARAMS/'%(molecule_name))
      else:
          os.chdir('BONDS')
          os.system('cp ../%s.z .'%(molecule_name))
@@ -2433,10 +2433,10 @@ elif args.function == 'bonds' and args.type == 'fit' and args.zmat:
          os.system('mv BONDS/%s.xyz CHARGES/'%(molecule_name))
          os.system('cp %s.z CHARGES/'%(molecule_name))
          print('onetep xyz file wrote to new folder charges') 
-         if 'QuBe_PARAMS' not in os.listdir("."):
-             os.system('mkdir QuBe_PARAMS')
-         os.system('cp BONDS/QuBe.sb QuBe_PARAMS/') 
-         os.system('mv BONDS/%s_BA.z QuBe_PARAMS/'%(molecule_name))   
+         if 'QUBE_PARAMS' not in os.listdir("."):
+             os.system('mkdir QUBE_PARAMS')
+         os.system('cp BONDS/QUBE.sb QUBE_PARAMS/') 
+         os.system('mv BONDS/%s_BA.z QUBE_PARAMS/'%(molecule_name))   
 ###################################################################################################
 elif args.function == 'bonds' and args.type == 'fit' and args.PDB:
      print('Zmat is needed for fitting, it must be in the same order as that used to write the g09 input files! Run again using zmat input -z')          
@@ -2557,51 +2557,51 @@ elif args.function == 'dihedrals' and args.type == 'fit' and args.zmat:
                   if option=='yes' or option=='y':
                      if "ligandqm" in os.listdir(".") or "ligandmm" in os.listdir("."):
                          os.system('rm ligand*')
-                     if "QuBe.sb" in os.listdir("."):
+                     if "QUBE.sb" in os.listdir("."):
                          BA=1
                      else:
                          BA=0
                      DIHEDRALS_fit()
                      if "_NBV_BAD" in molecule_name:
-                         os.system('cp zmat.new ../../QuBe_PARAMS/%s.z'%(molecule_name))
+                         os.system('cp zmat.new ../../QUBE_PARAMS/%s.z'%(molecule_name))
                      elif "_NB_BAD" in molecule_name:
-                         os.system('cp zmat.new ../../QuBe_PARAMS/%s.z'%(molecule_name))
+                         os.system('cp zmat.new ../../QUBE_PARAMS/%s.z'%(molecule_name))
                      elif "_BAD" in molecule_name:
-                           os.system('cp zmat.new ../../QuBe_PARAMS/%s.z'%(molecule_name))
+                           os.system('cp zmat.new ../../QUBE_PARAMS/%s.z'%(molecule_name))
                      elif "_NBV_BA" in molecule_name:
-                         os.system('cp zmat.new ../../QuBe_PARAMS/%sD.z'%(molecule_name))      
+                         os.system('cp zmat.new ../../QUBE_PARAMS/%sD.z'%(molecule_name))      
                      elif "_NB_BA" in molecule_name:
-                         os.system('cp zmat.new ../../QuBe_PARAMS/%sD.z'%(molecule_name))
+                         os.system('cp zmat.new ../../QUBE_PARAMS/%sD.z'%(molecule_name))
                      elif "_BA" in molecule_name:    
-                           os.system('cp zmat.new ../../QuBe_PARAMS/%sD.z'%(molecule_name))
+                           os.system('cp zmat.new ../../QUBE_PARAMS/%sD.z'%(molecule_name))
                      elif "_NBV" in molecule_name:
-                           os.system('cp zmat.new ../../QuBe_PARAMS/%s_D.z'%(molecule_name))      
+                           os.system('cp zmat.new ../../QUBE_PARAMS/%s_D.z'%(molecule_name))      
                      elif "_NB" in molecule_name:
-                           os.system('cp zmat.new ../../QuBe_PARAMS/%s_D.z'%(molecule_name))      
+                           os.system('cp zmat.new ../../QUBE_PARAMS/%s_D.z'%(molecule_name))      
                      else:
-                           os.system('cp zmat.new ../../QuBe_PARAMS/%s_D.z'%(molecule_name))
+                           os.system('cp zmat.new ../../QUBE_PARAMS/%s_D.z'%(molecule_name))
                      print('''==================================================================================================''')  
                   elif option=='no' or option=='n':
                        BA, molecule_name, new_dihnum = Param_search(molecule_name, new_dihnum)
                        DIHEDRALS_fit()
                        if "_NBV_BAD" in molecule_name:
-                           os.system('cp zmat.new ../../QuBe_PARAMS/%s.z'%(molecule_name))
+                           os.system('cp zmat.new ../../QUBE_PARAMS/%s.z'%(molecule_name))
                        elif "_NB_BAD" in molecule_name:
-                           os.system('cp zmat.new ../../QuBe_PARAMS/%s.z'%(molecule_name))
+                           os.system('cp zmat.new ../../QUBE_PARAMS/%s.z'%(molecule_name))
                        elif "_BAD" in molecule_name:
-                             os.system('cp zmat.new ../../QuBe_PARAMS/%s.z'%(molecule_name))
+                             os.system('cp zmat.new ../../QUBE_PARAMS/%s.z'%(molecule_name))
                        elif "_NBV_BA" in molecule_name:
-                           os.system('cp zmat.new ../../QuBe_PARAMS/%sD.z'%(molecule_name))      
+                           os.system('cp zmat.new ../../QUBE_PARAMS/%sD.z'%(molecule_name))      
                        elif "_NB_BA" in molecule_name:
-                           os.system('cp zmat.new ../../QuBe_PARAMS/%sD.z'%(molecule_name))
+                           os.system('cp zmat.new ../../QUBE_PARAMS/%sD.z'%(molecule_name))
                        elif "_BA" in molecule_name:    
-                            os.system('cp zmat.new ../../QuBe_PARAMS/%sD.z'%(molecule_name))
+                            os.system('cp zmat.new ../../QUBE_PARAMS/%sD.z'%(molecule_name))
                        elif "_NBV" in molecule_name:
-                             os.system('cp zmat.new ../../QuBe_PARAMS/%s_D.z'%(molecule_name))     
+                             os.system('cp zmat.new ../../QUBE_PARAMS/%s_D.z'%(molecule_name))     
                        elif "_NB" in molecule_name:
-                             os.system('cp zmat.new ../../QuBe_PARAMS/%s_D.z'%(molecule_name))     
+                             os.system('cp zmat.new ../../QUBE_PARAMS/%s_D.z'%(molecule_name))     
                        else:
-                           os.system('cp zmat.new ../../QuBe_PARAMS/%s_D.z'%(molecule_name))
+                           os.system('cp zmat.new ../../QUBE_PARAMS/%s_D.z'%(molecule_name))
                        print('''==================================================================================================''')
      elif 'SCAN' in where:
          if "results.dat" not in os.listdir("."):
@@ -2630,23 +2630,23 @@ elif args.function == 'dihedrals' and args.type == 'fit' and args.zmat:
          BA, molecule_name, new_dihnum = Param_search(molecule_name, new_dihnum)
          DIHEDRALS_fit()
          if "_NBV_BAD" in molecule_name:
-             os.system('cp zmat.new ../../QuBe_PARAMS/%s.z'%(molecule_name))
+             os.system('cp zmat.new ../../QUBE_PARAMS/%s.z'%(molecule_name))
          elif "_NB_BAD" in molecule_name:
-             os.system('cp zmat.new ../../QuBe_PARAMS/%s.z'%(molecule_name))
+             os.system('cp zmat.new ../../QUBE_PARAMS/%s.z'%(molecule_name))
          elif "_BAD" in molecule_name:
-               os.system('cp zmat.new ../../QuBe_PARAMS/%s.z'%(molecule_name))
+               os.system('cp zmat.new ../../QUBE_PARAMS/%s.z'%(molecule_name))
          elif "_NBV_BA" in molecule_name:
-             os.system('cp zmat.new ../../QuBe_PARAMS/%sD.z'%(molecule_name))      
+             os.system('cp zmat.new ../../QUBE_PARAMS/%sD.z'%(molecule_name))      
          elif "_NB_BA" in molecule_name:
-             os.system('cp zmat.new ../../QuBe_PARAMS/%sD.z'%(molecule_name))
+             os.system('cp zmat.new ../../QUBE_PARAMS/%sD.z'%(molecule_name))
          elif "_BA" in molecule_name:    
-               os.system('cp zmat.new ../../QuBe_PARAMS/%sD.z'%(molecule_name))
+               os.system('cp zmat.new ../../QUBE_PARAMS/%sD.z'%(molecule_name))
          elif "_NBV" in molecule_name:
-               os.system('cp zmat.new ../../QuBe_PARAMS/%s_D.z'%(molecule_name))      
+               os.system('cp zmat.new ../../QUBE_PARAMS/%s_D.z'%(molecule_name))      
          elif "_NB" in molecule_name:
-               os.system('cp zmat.new ../../QuBe_PARAMS/%s_D.z'%(molecule_name))      
+               os.system('cp zmat.new ../../QUBE_PARAMS/%s_D.z'%(molecule_name))      
          else:
-              os.system('cp zmat.new ../../QuBe_PARAMS/%s_D.z'%(molecule_name))
+              os.system('cp zmat.new ../../QUBE_PARAMS/%s_D.z'%(molecule_name))
          print('''==================================================================================================''')  
      else:
           scans=[]
@@ -2681,7 +2681,7 @@ elif args.function == 'dihedrals' and args.type == 'fit' and args.zmat:
                         print(f'{Fore.YELLOW}+{Style.RESET_ALL}')
                      else:
                         print(f'{Fore.YELLOW}+{Style.RESET_ALL}      ', end=" ")   
-          print('To fit torsions run QuBeKit.py -f dihedrals -t fit -z %s.z in each scan folder in your choice of order'%(molecule_name))       
+          print('To fit torsions run QUBEKit.py -f dihedrals -t fit -z %s.z in each scan folder in your choice of order'%(molecule_name))       
 ###################################################################################################
 elif args.function == 'charges' and args.type == 'write' and args.zmat:
      where=os.getcwd()
@@ -2711,7 +2711,7 @@ elif args.function == 'charges' and args.type == 'fit' and args.zmat:
        if "ddec_error_message" not in os.listdir("."):
          if "%s.z"%(molecule_name) in os.listdir("."):
             os.system('cp %s.z zmat'%(molecule_name))
-            os.system('cp $QuBeKit/onetep/lj_script .')
+            os.system('cp $QUBEKit/onetep/lj_script .')
             os.system('./lj_script')
             os.system('mv zmat_ddec %s_NB.z'%(molecule_name))
             if 'xyz_with_extra_point_charges.xyz' in os.listdir("."):
@@ -2719,7 +2719,7 @@ elif args.function == 'charges' and args.type == 'fit' and args.zmat:
                 if 'X ' in xyz:
                     print('Extra sites found in xyz atempting to convert to zmat')
                     xyztozmat()
-                    if 'QuBe.sb' in os.listdir("../../QuBe_PARAMS/"):
+                    if 'QUBE.sb' in os.listdir("../../QUBE_PARAMS/"):
                         out_V=open('%s_NBV_BA.z'%(molecule_name),'w+')
                         G1, V1, A1, D1, Q1 = dih_tag(molecule_name+'_NBV')
                         z_in=open('%s_NBV.z'%(molecule_name),'r')
@@ -2730,8 +2730,8 @@ elif args.function == 'charges' and args.type == 'fit' and args.zmat:
                             else:
                                 out_V.write(line)
                         out_V.close()
-                        os.system('cp %s_NBV_BA.z ../../QuBe_PARAMS/'%(molecule_name))
-                    os.system('cp %s_NBV.z ../../QuBe_PARAMS/'%(molecule_name))
+                        os.system('cp %s_NBV_BA.z ../../QUBE_PARAMS/'%(molecule_name))
+                    os.system('cp %s_NBV.z ../../QUBE_PARAMS/'%(molecule_name))
                     print('Zmat with and without extra sites made and moved')
             out=open('%s_NB_BA.z'%(molecule_name),'w+')
             G1, V1, A1, D1, Q1 = dih_tag(molecule_name+'_NB')
@@ -2743,8 +2743,8 @@ elif args.function == 'charges' and args.type == 'fit' and args.zmat:
                 else:
                     out.write(line)
             out.close()
-            os.system('cp %s_NB.z ../../QuBe_PARAMS/'%(molecule_name))
-            os.system('cp %s_NB_BA.z ../../QuBe_PARAMS/'%(molecule_name))
+            os.system('cp %s_NB.z ../../QUBE_PARAMS/'%(molecule_name))
+            os.system('cp %s_NB_BA.z ../../QUBE_PARAMS/'%(molecule_name))
      elif "iter_1" in os.listdir("."):
            os.chdir('iter_1')
            if "ddec_error_message" not in os.listdir("."):
@@ -2753,7 +2753,7 @@ elif args.function == 'charges' and args.type == 'fit' and args.zmat:
                else:
                     os.system("cp ../../%s.z ."%(molecule_name))
                     os.system("cp %s.z zmat"%(molecule_name))
-               os.system('cp $QuBeKit/onetep/lj_script .')
+               os.system('cp $QUBEKit/onetep/lj_script .')
                os.system('./lj_script')
                os.system('mv zmat_ddec %s_NB.z'%(molecule_name))
                if 'xyz_with_extra_point_charges.xyz' in os.listdir("."):
@@ -2761,7 +2761,7 @@ elif args.function == 'charges' and args.type == 'fit' and args.zmat:
                    if 'X ' in xyz:
                        print('Extra sites found in xyz atempting to convert to zmat')
                        xyztozmat()
-                       if 'QuBe.sb' in os.listdir("../../QuBe_PARAMS/"):
+                       if 'QUBE.sb' in os.listdir("../../QUBE_PARAMS/"):
                           out_V=open('%s_NBV_BA.z'%(molecule_name),'w+')
                           G1, V1, A1, D1, Q1 = dih_tag(molecule_name+'_NBV')
                           z_in=open('%s_NBV.z'%(molecule_name),'r')
@@ -2772,8 +2772,8 @@ elif args.function == 'charges' and args.type == 'fit' and args.zmat:
                               else:
                                   out_V.write(line)
                           out_V.close()
-                          os.system('cp %s_NBV_BA.z ../../QuBe_PARAMS/'%(molecule_name))
-                       os.system('cp %s_NBV.z ../../QuBe_PARAMS/'%(molecule_name))
+                          os.system('cp %s_NBV_BA.z ../../QUBE_PARAMS/'%(molecule_name))
+                       os.system('cp %s_NBV.z ../../QUBE_PARAMS/'%(molecule_name))
                        print('Zmat with and without extra sites made and moved')
                out=open('%s_NB_BA.z'%(molecule_name),'w+')
                G1, V1, A1, D1, Q1 = dih_tag(molecule_name+'_NB')
@@ -2785,8 +2785,8 @@ elif args.function == 'charges' and args.type == 'fit' and args.zmat:
                    else:
                           out.write(line)
                out.close()
-               os.system('cp %s_NB_BA.z ../../QuBe_PARAMS/'%(molecule_name))
-               os.system('cp %s_NB.z ../../QuBe_PARAMS/'%(molecule_name))
+               os.system('cp %s_NB_BA.z ../../QUBE_PARAMS/'%(molecule_name))
+               os.system('cp %s_NB.z ../../QUBE_PARAMS/'%(molecule_name))
      elif "CHARGES" in os.listdir("."):
            os.chdir('CHARGES/iter_1')
            if "ddec_error_message" not in os.listdir("."):
@@ -2795,7 +2795,7 @@ elif args.function == 'charges' and args.type == 'fit' and args.zmat:
                else:
                     os.system("cp ../../%s.z ."%(molecule_name))
                     os.system("cp %s.z zmat"%(molecule_name))
-               os.system('cp $QuBeKit/onetep/lj_script .')
+               os.system('cp $QUBEKit/onetep/lj_script .')
                os.system('./lj_script')
                os.system('mv zmat_ddec %s_NB.z'%(molecule_name))
                if 'xyz_with_extra_point_charges.xyz' in os.listdir("."):
@@ -2803,7 +2803,7 @@ elif args.function == 'charges' and args.type == 'fit' and args.zmat:
                    if 'X ' in xyz:
                        print('Extra sites found in xyz atempting to convert to zmat')
                        xyztozmat()
-                       if 'QuBe.sb' in os.listdir("../../QuBe_PARAMS/"):
+                       if 'QUBE.sb' in os.listdir("../../QUBE_PARAMS/"):
                            out_V=open('%s_NBV_BA.z'%(molecule_name),'w+')
                            G1, V1, A1, D1, Q1 = dih_tag(molecule_name+'_NBV')
                            z_in=open('%s_NBV.z'%(molecule_name),'r')
@@ -2814,8 +2814,8 @@ elif args.function == 'charges' and args.type == 'fit' and args.zmat:
                                else:
                                    out_V.write(line)
                            out_V.close()
-                           os.system('cp %s_NBV_BA.z ../../QuBe_PARAMS/'%(molecule_name))
-                       os.system('cp %s_NBV.z ../../QuBe_PARAMS/'%(molecule_name))
+                           os.system('cp %s_NBV_BA.z ../../QUBE_PARAMS/'%(molecule_name))
+                       os.system('cp %s_NBV.z ../../QUBE_PARAMS/'%(molecule_name))
                        print('Zmat with and without extra sites made and moved')
                out=open('%s_NB_BA.z'%(molecule_name),'w+')
                G1, V1, A1, D1, Q1 = dih_tag(molecule_name+'_NB')
@@ -2827,8 +2827,8 @@ elif args.function == 'charges' and args.type == 'fit' and args.zmat:
                    else:
                           out.write(line)
                out.close()
-               os.system('cp %s_NB_BA.z ../../QuBe_PARAMS/'%(molecule_name))
-               os.system('cp %s_NB.z ../../QuBe_PARAMS/'%(molecule_name))
+               os.system('cp %s_NB_BA.z ../../QUBE_PARAMS/'%(molecule_name))
+               os.system('cp %s_NB.z ../../QUBE_PARAMS/'%(molecule_name))
 ###################################################################################################
 if args.XML and args.zmat:
    print('Making openMM XML file and GMX .gro and itp files for the molecule')
@@ -2836,26 +2836,26 @@ if args.XML and args.zmat:
    print('The molecule tag name will be the first three letters of the molecule')
    where=os.getcwd()
    print(molecule_name)
-   if "QuBe_PARAMS" in where:
+   if "QUBE_PARAMS" in where:
        os.system('mkdir XML+GMX')
        if "_BAD" in molecule_name:
-          os.system('cp QuBe.sb QuBe.par %s.z XML+GMX/'%(molecule_name))
+          os.system('cp QUBE.sb QUBE.par %s.z XML+GMX/'%(molecule_name))
           os.chdir('XML+GMX')
           os.system('cp $BOSSdir/scripts/SPMcmd .')
-          os.system("sed -i 's/$BOSSdir\/oplsaa.par/QuBe.par/g' SPMcmd")
-          os.system("sed -i 's/$BOSSdir\/oplsaa.sb/QuBe.sb/g' SPMcmd")
+          os.system("sed -i 's/$BOSSdir\/oplsaa.par/QUBE.par/g' SPMcmd")
+          os.system("sed -i 's/$BOSSdir\/oplsaa.sb/QUBE.sb/g' SPMcmd")
        elif "_BA" in molecule_name:
-            os.system('cp QuBe.sb %s.z XML+GMX/'%(molecule_name))
+            os.system('cp QUBE.sb %s.z XML+GMX/'%(molecule_name))
             os.chdir('XML+GMX')
             os.system('cp $BOSSdir/scripts/SPMcmd .')
-            os.system("sed -i 's/$BOSSdir\/oplsaa.sb/QuBe.sb/g' SPMcmd")
+            os.system("sed -i 's/$BOSSdir\/oplsaa.sb/QUBE.sb/g' SPMcmd")
        else: 
             os.system('cp %s.z XML+GMX/'%(molecule_name))
             os.system('cp $BOSSdir/oplsaa* XML+GMX/')            
             os.chdir('XML+GMX')  
             os.system('cp $BOSSdir/scripts/SPMcmd .')
    else:
-       sys.exit('Please use this function in the QuBe_PARAMS folder')
+       sys.exit('Please use this function in the QUBE_PARAMS folder')
    os.system('$BOSSdir/scripts/xZPDB %s > /dev/null 2>&1'%(molecule_name))      
    os.system('cp %s.z optzmat'%(molecule_name))
    print('Doing Single Point calculation')
@@ -2907,7 +2907,7 @@ if args.singlepoint and args.zmat:
    SING_P()   
 ################################################################################################### 
 if args.replace and args.zmat: 
-   print('Looking for matching molecule and QuBe torsions')
+   print('Looking for matching molecule and QUBE torsions')
    Replace() 
 ###################################################################################################
 
