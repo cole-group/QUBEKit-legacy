@@ -1,5 +1,5 @@
 #!/bin/bash
-echo "Script will install QuBeKit and append it to your bashrc path"
+echo "Script will install QUBEKit and append it to your bashrc path"
 
 echo "make sure you are in your home directory"
 pwd
